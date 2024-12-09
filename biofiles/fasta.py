@@ -1,53 +1,31 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from types import TracebackType
-from typing import TextIO, Iterator, Self
+from typing import TextIO, Iterator
+
+from biofiles.common import Reader, Writer
+from biofiles.types.sequence import Sequence
 
 
-__all__ = ["FASTASequence", "FASTAReader", "FASTAWriter"]
-
-
-@dataclass(frozen=True)
-class FASTASequence:
-    id: str
-    description: str
-    sequence: str
+__all__ = ["FASTAReader", "FASTAWriter"]
 
 
 @dataclass
-class _FASTASequenceDraft:
+class _SequenceDraft:
     id: str
     description: str
     sequence_parts: list[str] = field(default_factory=list)
 
-    def finalize(self) -> FASTASequence:
-        return FASTASequence(
+    def finalize(self) -> Sequence:
+        return Sequence(
             id=self.id,
             description=self.description,
             sequence="".join(self.sequence_parts),
         )
 
 
-class FASTAReader:
-    def __init__(self, input_: TextIO | Path | str) -> None:
-        if isinstance(input_, Path | str):
-            input_ = open(input_)
-        self._input = input_
-
-    def __enter__(self) -> "FASTAReader":
-        self._input.__enter__()
-        return self
-
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
-    ) -> None:
-        self._input.__exit__(exc_type, exc_val, exc_tb)
-
-    def __iter__(self) -> Iterator[FASTASequence]:
-        draft: _FASTASequenceDraft | None = None
+class FASTAReader(Reader):
+    def __iter__(self) -> Iterator[Sequence]:
+        draft: _SequenceDraft | None = None
         for line in self._input:
             line = line.rstrip("\n")
             if line.startswith(">"):
@@ -63,7 +41,7 @@ class FASTAReader:
                         raise ValueError(
                             f"unexpected line {line!r}, expected a non-empty sequence identifier"
                         )
-                draft = _FASTASequenceDraft(id=id_, description=desc)
+                draft = _SequenceDraft(id=id_, description=desc)
             elif line:
                 if not draft:
                     raise ValueError(f"unexpected line {line!r}, expected >")
@@ -72,26 +50,11 @@ class FASTAReader:
             yield draft.finalize()
 
 
-class FASTAWriter:
+class FASTAWriter(Writer):
     def __init__(self, output: TextIO | Path | str, width: int = 80) -> None:
-        if isinstance(output, Path | str):
-            output = open(output, "w")
-        self._output = output
-        self._width = width
+        super().__init__(output)
 
-    def __enter__(self) -> "FASTAWriter":
-        self._output.__enter__()
-        return self
-
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
-    ) -> None:
-        self._output.__exit__(exc_type, exc_val, exc_tb)
-
-    def write(self, sequence: FASTASequence) -> None:
+    def write(self, sequence: Sequence) -> None:
         self._output.write(f">{sequence.id} {sequence.description}\n")
         sequence_len = len(sequence.sequence)
         for offset in range(0, sequence_len, self._width):

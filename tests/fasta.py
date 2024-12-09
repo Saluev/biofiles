@@ -1,7 +1,8 @@
 import pathlib
 from io import StringIO
 
-from biofiles.fasta import FASTAReader, FASTASequence, FASTAWriter
+from biofiles.fasta import FASTAReader, FASTAWriter
+from biofiles.types.sequence import Sequence
 
 
 def test_read_single_sequence_from_string() -> None:
@@ -10,7 +11,7 @@ def test_read_single_sequence_from_string() -> None:
         sequences = [*r]
 
     assert sequences == [
-        FASTASequence(
+        Sequence(
             id="SEQ", description="A very important sequence.", sequence="AT" * 400
         )
     ]
@@ -22,7 +23,7 @@ def test_read_single_sequence_from_path() -> None:
         sequences = [*r]
 
     assert sequences == [
-        FASTASequence(
+        Sequence(
             id="SEQ", description="A very important sequence.", sequence="AT" * 400
         )
     ]
@@ -34,7 +35,7 @@ def test_read_single_sequence_from_file() -> None:
         sequences = [*r]
 
     assert sequences == [
-        FASTASequence(
+        Sequence(
             id="SEQ", description="A very important sequence.", sequence="AT" * 400
         )
     ]
@@ -46,9 +47,9 @@ def test_read_multiple_sequences_from_file() -> None:
         sequences = [*r]
 
     assert sequences == [
-        FASTASequence(id="SEQ1", description="Goose", sequence="GAGAGA"),
-        FASTASequence(id="SEQ2", description="Walker", sequence="ATAT"),
-        FASTASequence(id="SEQ3", description="Moon landing", sequence="CG"),
+        Sequence(id="SEQ1", description="Goose", sequence="GAGAGA"),
+        Sequence(id="SEQ2", description="Walker", sequence="ATAT"),
+        Sequence(id="SEQ3", description="Moon landing", sequence="CG"),
     ]
 
 
@@ -56,29 +57,29 @@ def test_read_no_description() -> None:
     with FASTAReader(StringIO(">SEQ\nATGC")) as r:
         sequences = [*r]
 
-    assert sequences == [FASTASequence(id="SEQ", description="", sequence="ATGC")]
+    assert sequences == [Sequence(id="SEQ", description="", sequence="ATGC")]
 
 
 def test_write_short_single_sequence() -> None:
     io = StringIO()
     w = FASTAWriter(io)
-    w.write(FASTASequence(id="SEQ", description="A sequence.", sequence="ATGC"))
+    w.write(Sequence(id="SEQ", description="A sequence.", sequence="ATGC"))
     assert io.getvalue() == ">SEQ A sequence.\nATGC\n"
 
 
 def test_write_long_single_sequence() -> None:
     io = StringIO()
     w = FASTAWriter(io, width=2)
-    w.write(FASTASequence(id="SEQ", description="A sequence.", sequence="ATGC"))
+    w.write(Sequence(id="SEQ", description="A sequence.", sequence="ATGC"))
     assert io.getvalue() == ">SEQ A sequence.\nAT\nGC\n"
 
 
 def test_write_multiple_sequences() -> None:
     io = StringIO()
     w = FASTAWriter(io)
-    w.write(FASTASequence(id="SEQ1", description="Goose", sequence="GAGAGA"))
-    w.write(FASTASequence(id="SEQ2", description="Walker", sequence="ATAT"))
-    w.write(FASTASequence(id="SEQ3", description="Moon landing", sequence="CG"))
+    w.write(Sequence(id="SEQ1", description="Goose", sequence="GAGAGA"))
+    w.write(Sequence(id="SEQ2", description="Walker", sequence="ATAT"))
+    w.write(Sequence(id="SEQ3", description="Moon landing", sequence="CG"))
     assert (
         io.getvalue()
         == ">SEQ1 Goose\nGAGAGA\n>SEQ2 Walker\nATAT\n>SEQ3 Moon landing\nCG\n"
