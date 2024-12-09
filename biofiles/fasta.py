@@ -53,6 +53,7 @@ class FASTAReader(Reader):
 class FASTAWriter(Writer):
     def __init__(self, output: TextIO | Path | str, width: int = 80) -> None:
         super().__init__(output)
+        self._width = width
 
     def write(self, sequence: Sequence) -> None:
         self._output.write(f">{sequence.id} {sequence.description}\n")
