@@ -8,6 +8,9 @@ from biofiles.common import Strand, Reader
 from biofiles.types.feature import Feature, Gene, Exon
 
 
+__all__ = ["GFFReader"]
+
+
 @dataclass
 class _FeatureDraft:
     idx: int
@@ -189,7 +192,7 @@ class GFFReader(Reader):
         biotype = draft.pick_attribute("gene_biotype")
         if name is None or biotype is None:
             return feature
-        return Gene(**feature.__dict__, name=name, biotype=biotype)
+        return Gene(**feature.__dict__, name=name, biotype=biotype, exons=())
 
     def _finalize_exon(self, draft: _FeatureDraft, result: _Features) -> Feature:
         feature = self._finalize_other(draft, result)
@@ -200,7 +203,9 @@ class GFFReader(Reader):
 
         if gene is None:
             return feature
-        return Exon(**feature.__dict__, gene=gene)
+        exon = Exon(**feature.__dict__, gene=gene)
+        object.__setattr__(gene, "exons", gene.exons + (exon,))
+        return exon
 
     def _finalize_other(self, draft: _FeatureDraft, result: _Features) -> Feature:
         parent_id = draft.attributes.get("Parent", None)

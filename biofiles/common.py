@@ -1,6 +1,6 @@
 from pathlib import Path
 from types import TracebackType
-from typing import TypeAlias, Literal, TextIO, Self
+from typing import TypeAlias, Literal, TextIO
 
 Strand: TypeAlias = Literal["+", "-"]
 

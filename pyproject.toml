@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "biofiles"
+version = "0.0.1"
+authors = [
+  { name="Tigran Saluev", email="tigran@saluev.com" },
+]
+maintainers = [
+  { name="Tigran Saluev", email="tigran@saluev.com" },
+]
+description = "Pure-Python, zero-dependency collection of bioinformatics-related file readers and writers"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]

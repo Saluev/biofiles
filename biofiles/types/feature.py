@@ -3,6 +3,9 @@ from dataclasses import dataclass
 from biofiles.common import Strand
 
 
+__all__ = ["Feature", "Gene", "Exon"]
+
+
 @dataclass(frozen=True)
 class Feature:
     sequence_id: str
@@ -33,6 +36,7 @@ class Feature:
 class Gene(Feature):
     name: str
     biotype: str
+    exons: tuple["Exon", ...]
 
 
 @dataclass(frozen=True)
