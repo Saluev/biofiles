@@ -4,6 +4,9 @@ from types import TracebackType
 from typing import TextIO, Iterator, Self
 
 
+__all__ = ["FASTASequence", "FASTAReader", "FASTAWriter"]
+
+
 @dataclass(frozen=True)
 class FASTASequence:
     id: str
@@ -31,7 +34,7 @@ class FASTAReader:
             input_ = open(input_)
         self._input = input_
 
-    def __enter__(self) -> Self:
+    def __enter__(self) -> "FASTAReader":
         self._input.__enter__()
         return self
 
@@ -76,7 +79,7 @@ class FASTAWriter:
         self._output = output
         self._width = width
 
-    def __enter__(self) -> Self:
+    def __enter__(self) -> "FASTAWriter":
         self._output.__enter__()
         return self
 
