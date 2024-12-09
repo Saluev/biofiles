@@ -1,12 +1,11 @@
 import sys
-from collections import deque, defaultdict
+from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator, cast, TextIO
 
 from biofiles.common import Strand, Reader
 from biofiles.types.feature import Feature, Gene, Exon
-
 
 __all__ = ["GFFReader"]
 
