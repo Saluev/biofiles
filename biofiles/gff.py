@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator, cast, TextIO
 
-from biofiles.common import Strand, Reader
+from biofiles.common import Strand, Reader, Writer
 from biofiles.types.feature import Feature, Gene, Exon
 
 __all__ = ["GFFReader"]
@@ -259,6 +259,27 @@ class GFFReader(Reader):
             for part in attributes_str.strip(";").split(";")
             for k, v in (part.split("=", 1),)
         }
+
+
+class GFF3Writer(Writer):
+    def __init__(self, output: TextIO | Path | str) -> None:
+        super().__init__(output)
+        self._output.write(f"{_VERSION_PREFIX}3\n")
+
+    def write(self, feature: Feature) -> None:
+        fields = (
+            feature.sequence_id,
+            feature.source,
+            feature.type_,
+            str(feature.start_original),
+            str(feature.end_original),
+            str(feature.score) if feature.score is not None else "",
+            str(feature.strand) if feature.strand is not None else "",
+            str(feature.phase) if feature.phase is not None else "",
+            ";".join(f"{k}={v}" for k, v in feature.attributes.items()),
+        )
+        self._output.write("\t".join(fields))
+        self._output.write("\n")
 
 
 _VERSION_PREFIX = "##gff-version "
