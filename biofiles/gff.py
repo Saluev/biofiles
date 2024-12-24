@@ -188,7 +188,7 @@ class GFFReader(Reader):
     def _finalize_gene(self, draft: _FeatureDraft, result: _Features) -> Feature:
         feature = self._finalize_other(draft, result)
         name = draft.pick_attribute("gene_name", "Name")
-        biotype = draft.pick_attribute("gene_biotype")
+        biotype = draft.pick_attribute("gene_biotype", "biotype")
         if name is None or biotype is None:
             return feature
         return Gene(**feature.__dict__, name=name, biotype=biotype, exons=())
