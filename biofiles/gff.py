@@ -7,7 +7,7 @@ from typing import Iterator, cast, TextIO
 from biofiles.common import Strand, Reader, Writer
 from biofiles.types.feature import Feature, Gene, Exon
 
-__all__ = ["GFFReader"]
+__all__ = ["GFFReader", "GFF3Writer"]
 
 
 @dataclass
