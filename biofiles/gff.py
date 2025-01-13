@@ -273,9 +273,9 @@ class GFF3Writer(Writer):
             feature.type_,
             str(feature.start_original),
             str(feature.end_original),
-            str(feature.score) if feature.score is not None else "",
-            str(feature.strand) if feature.strand is not None else "",
-            str(feature.phase) if feature.phase is not None else "",
+            str(feature.score) if feature.score is not None else ".",
+            str(feature.strand) if feature.strand is not None else ".",
+            str(feature.phase) if feature.phase is not None else ".",
             ";".join(f"{k}={v}" for k, v in feature.attributes.items()),
         )
         self._output.write("\t".join(fields))
