@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Iterator, cast, TextIO
 
 from biofiles.common import Strand, Reader, Writer
-from biofiles.types.feature import Feature, Gene, Exon
+from biofiles.types.feature import Feature, Gene, Exon, ThreePrimeUTR
 
 __all__ = ["GFFReader", "GFF3Writer"]
 
@@ -173,11 +173,13 @@ class GFFReader(Reader):
         yield from result.features
 
     def _finalize_draft(self, draft: _FeatureDraft, result: _Features) -> Feature:
-        match draft.type_:
+        match draft.type_.lower():
             case "gene":
                 feature = self._finalize_gene(draft, result)
             case "exon":
                 feature = self._finalize_exon(draft, result)
+            case "three_prime_utr":
+                feature = self._finalize_three_prime_utr(draft, result)
             case _:
                 feature = self._finalize_other(draft, result)
         if feature.parent:
@@ -205,6 +207,19 @@ class GFFReader(Reader):
         exon = Exon(**feature.__dict__, gene=gene)
         object.__setattr__(gene, "exons", gene.exons + (exon,))
         return exon
+
+    def _finalize_three_prime_utr(
+        self, draft: _FeatureDraft, result: _Features
+    ) -> Feature:
+        feature = self._finalize_other(draft, result)
+
+        gene = feature.parent
+        while gene and not isinstance(gene, Gene):
+            gene = gene.parent
+
+        if gene is None:
+            return feature
+        return ThreePrimeUTR(**feature.__dict__, gene=gene)
 
     def _finalize_other(self, draft: _FeatureDraft, result: _Features) -> Feature:
         parent_id = draft.attributes.get("Parent", None)

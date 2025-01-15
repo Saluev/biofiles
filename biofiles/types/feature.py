@@ -43,3 +43,9 @@ class Gene(Feature):
 class Exon(Feature):
     gene: Gene
     # TODO transcript, mRNA
+
+
+@dataclass(frozen=True)
+class ThreePrimeUTR(Feature):
+    gene: Gene
+    # TODO transcript
