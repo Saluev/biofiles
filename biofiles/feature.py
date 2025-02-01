@@ -67,6 +67,9 @@ class FeatureReader(Reader):
         super().__init__(input_)
         self._streaming_window = streaming_window
 
+    def __iter__(self) -> Iterator[Feature]:
+        raise NotImplementedError
+
     def _finalize_drafts(
         self, drafts: FeatureDrafts, w: int | None
     ) -> Iterator[Feature]:
