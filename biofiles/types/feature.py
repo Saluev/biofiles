@@ -14,7 +14,7 @@ class Feature:
 
     start_original: int
     end_original: int
-    # Original, 1-based inclusive values.
+    # Original values as they were present in the file (1-based inclusive for .gff and .gtf).
 
     start_c: int
     end_c: int

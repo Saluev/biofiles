@@ -37,11 +37,12 @@ def test_write_gff3() -> None:
             strand="+",
             phase=None,
             attributes={"biotype": "protein_coding", "foo": "bar"},
+            id=None,
             parent=None,
             children=(),
         )
     )
     assert (
         io.getvalue()
-        == "##gff-version 3\nchr1\tImagination\tgene\t70\t420\t\t+\t\tbiotype=protein_coding;foo=bar\n"
+        == "##gff-version 3\nchr1\tImagination\tgene\t70\t420\t.\t+\t.\tbiotype=protein_coding;foo=bar\n"
     )
