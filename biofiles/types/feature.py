@@ -25,6 +25,7 @@ class Feature:
     phase: int | None
     attributes: dict[str, str]
 
+    id: str | None
     parent: "GFFFeature | None"
     children: tuple["Feature", ...]
 
