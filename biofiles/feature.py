@@ -1,10 +1,10 @@
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, TextIO
+from typing import Iterator, TextIO, Type
 
 from biofiles.common import Reader, Strand
-from biofiles.types.feature import Feature, Gene, ThreePrimeUTR, Exon
+from biofiles.types.feature import Feature, Gene, ThreePrimeUTR, Exon, UTR
 
 
 @dataclass
@@ -112,7 +112,9 @@ class FeatureReader(Reader):
             case "exon":
                 feature = self._finalize_exon(draft, result)
             case "three_prime_utr":
-                feature = self._finalize_three_prime_utr(draft, result)
+                feature = self._finalize_utr(draft, result, ThreePrimeUTR)
+            case "utr":
+                feature = self._finalize_utr(draft, result, UTR)
             case _:
                 feature = self._finalize_other(draft, result)
         if feature.parent:
@@ -141,8 +143,8 @@ class FeatureReader(Reader):
         object.__setattr__(gene, "exons", gene.exons + (exon,))
         return exon
 
-    def _finalize_three_prime_utr(
-        self, draft: FeatureDraft, result: Features
+    def _finalize_utr(
+        self, draft: FeatureDraft, result: Features, type_: Type[UTR]
     ) -> Feature:
         feature = self._finalize_other(draft, result)
 
@@ -152,7 +154,7 @@ class FeatureReader(Reader):
 
         if gene is None:
             return feature
-        return ThreePrimeUTR(**feature.__dict__, gene=gene)
+        return type_(**feature.__dict__, gene=gene)
 
     def _finalize_other(self, draft: FeatureDraft, result: Features) -> Feature:
         parent_id = self._extract_parent_id(draft)
