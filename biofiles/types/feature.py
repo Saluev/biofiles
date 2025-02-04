@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from biofiles.common import Strand
 
 
-__all__ = ["Feature", "Gene", "Exon"]
+__all__ = ["Feature", "Gene", "Exon", "UTR", "ThreePrimeUTR"]
 
 
 @dataclass(frozen=True)
