@@ -1,10 +1,10 @@
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, TextIO, Type
+from typing import Iterator, TextIO, Type, TypeVar
 
 from biofiles.common import Reader, Strand
-from biofiles.types.feature import Feature, Gene, ThreePrimeUTR, Exon, UTR
+from biofiles.types.feature import Feature, Gene, ThreePrimeUTR, Exon, UTR, Transcript
 
 
 @dataclass
@@ -109,6 +109,8 @@ class FeatureReader(Reader):
         match draft.type_.lower():
             case "gene":
                 feature = self._finalize_gene(draft, result)
+            case "transcript":
+                feature = self._finalize_transcript(draft, result)
             case "exon":
                 feature = self._finalize_exon(draft, result)
             case "three_prime_utr":
@@ -128,33 +130,43 @@ class FeatureReader(Reader):
         biotype = draft.pick_attribute("gene_biotype", "biotype", "gene_type")
         if name is None or biotype is None:
             return feature
-        return Gene(**feature.__dict__, name=name, biotype=biotype, exons=())
+        return Gene(**feature.__dict__, name=name, biotype=biotype, transcripts=())
+
+    def _finalize_transcript(self, draft: FeatureDraft, result: Features) -> Feature:
+        feature = self._finalize_other(draft, result)
+        if not (gene := self._find_ancestor_of_type(feature, Gene)):
+            return feature
+        transcript = Transcript(**feature.__dict__, gene=gene, exons=())
+        object.__setattr__(gene, "transcripts", gene.transcripts + (transcript,))
+        return transcript
 
     def _finalize_exon(self, draft: FeatureDraft, result: Features) -> Feature:
         feature = self._finalize_other(draft, result)
-
-        gene = feature.parent
-        while gene and not isinstance(gene, Gene):
-            gene = gene.parent
-
-        if gene is None:
+        if not (transcript := self._find_ancestor_of_type(feature, Transcript)):
             return feature
-        exon = Exon(**feature.__dict__, gene=gene)
-        object.__setattr__(gene, "exons", gene.exons + (exon,))
+        exon = Exon(**feature.__dict__, gene=transcript.gene, transcript=transcript)
+        object.__setattr__(transcript, "exons", transcript.exons + (exon,))
         return exon
 
+    UTRT = TypeVar("UTRT", bound=UTR)
+
     def _finalize_utr(
-        self, draft: FeatureDraft, result: Features, type_: Type[UTR]
-    ) -> Feature:
+        self, draft: FeatureDraft, result: Features, type_: Type[UTRT]
+    ) -> Feature | UTRT:
         feature = self._finalize_other(draft, result)
-
-        gene = feature.parent
-        while gene and not isinstance(gene, Gene):
-            gene = gene.parent
-
-        if gene is None:
+        if not (transcript := self._find_ancestor_of_type(feature, Transcript)):
             return feature
-        return type_(**feature.__dict__, gene=gene)
+        return type_(**feature.__dict__, gene=transcript.gene, transcript=transcript)
+
+    FeatureT = TypeVar("FeatureT", bound=Feature)
+
+    def _find_ancestor_of_type(
+        self, feature: Feature, t: Type[FeatureT]
+    ) -> FeatureT | None:
+        ancestor = feature.parent
+        while ancestor and not isinstance(ancestor, t):
+            ancestor = ancestor.parent
+        return ancestor
 
     def _finalize_other(self, draft: FeatureDraft, result: Features) -> Feature:
         parent_id = self._extract_parent_id(draft)
@@ -193,6 +205,8 @@ class FeatureReader(Reader):
             return id_
         if draft.type_ == "transcript" and (id_ := draft.attributes.get("gene_id")):
             return id_
-        if draft.type_ == "exon" and (id_ := draft.attributes.get("transcript_id")):
+        if draft.type_ in ("exon", "UTR", "three_prime_UTR", "five_prime_UTR") and (
+            id_ := draft.attributes.get("transcript_id")
+        ):
             return id_
         return None

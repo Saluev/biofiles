@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from biofiles.common import Strand
 
 
-__all__ = ["Feature", "Gene", "Exon", "UTR", "ThreePrimeUTR"]
+__all__ = ["Feature", "Gene", "Transcript", "Exon", "UTR", "ThreePrimeUTR"]
 
 
 @dataclass(frozen=True)
@@ -37,19 +37,26 @@ class Feature:
 class Gene(Feature):
     name: str
     biotype: str
+    transcripts: tuple["Transcript", ...]
+
+
+@dataclass(frozen=True)
+class Transcript(Feature):
+    gene: Gene
     exons: tuple["Exon", ...]
 
 
 @dataclass(frozen=True)
 class Exon(Feature):
     gene: Gene
-    # TODO transcript, mRNA
+    transcript: Transcript
+    # TODO mRNA
 
 
 @dataclass(frozen=True)
 class UTR(Feature):
     gene: Gene
-    # TODO transcript
+    transcript: Transcript
 
 
 @dataclass(frozen=True)
