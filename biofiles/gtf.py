@@ -41,5 +41,6 @@ if __name__ == "__main__":
             f"{path}: {total_features} features, "
             f"{parsed_genes} genes parsed out of {annotated_genes}, "
             f"{parsed_exons} exons parsed out of {annotated_exons}, "
-            f"{parsed_utrs} UTRs parsed out of {annotated_utrs}"
+            f"{parsed_utrs} UTRs parsed out of {annotated_utrs}",
+            file=sys.stderr,
         )

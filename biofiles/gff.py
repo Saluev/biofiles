@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Iterator, cast, TextIO
 
 from biofiles.common import Strand, Writer
-from biofiles.feature import FeatureReader, FeatureDraft, FeatureDrafts
+from biofiles.utility.cli import parse_pipeline_args
+from biofiles.utility.feature import FeatureReader, FeatureDraft, FeatureDrafts
 from biofiles.types.feature import Feature, Gene, Exon, UTR
 
 __all__ = ["GFFReader", "GFF3Writer"]
@@ -137,7 +138,15 @@ _VERSION_PREFIX = "##gff-version "
 
 
 if __name__ == "__main__":
-    for path in sys.argv[1:]:
+    pipeline = parse_pipeline_args(sys.argv[1:])
+    if pipeline.mapper is None:
+        writer = GFF3Writer(sys.stdout)
+        pipeline.mapper = writer.write
+    else:
+        old_mapper = pipeline.mapper
+        pipeline.mapper = lambda f: print(old_mapper(f))
+
+    for path in pipeline.inputs:
         with GFFReader(path) as r:
             total_features = 0
             annotated_genes = 0
@@ -154,9 +163,14 @@ if __name__ == "__main__":
                 parsed_genes += isinstance(feature, Gene)
                 parsed_exons += isinstance(feature, Exon)
                 parsed_utrs += isinstance(feature, UTR)
+
+                if pipeline.filter(feature):
+                    pipeline.map(feature)
+
         print(
             f"{path}: {total_features} features, "
             f"{parsed_genes} genes parsed out of {annotated_genes}, "
             f"{parsed_exons} exons parsed out of {annotated_exons}, "
-            f"{parsed_utrs} UTRs parsed out of {annotated_utrs}"
+            f"{parsed_utrs} UTRs parsed out of {annotated_utrs}",
+            file=sys.stderr,
         )
