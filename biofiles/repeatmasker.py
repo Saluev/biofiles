@@ -1,6 +1,6 @@
 import sys
 from collections import Counter
-from typing import Iterator
+from typing import Iterator, cast, Literal
 
 from biofiles.common import Reader
 from biofiles.types.repeat import Repeat
@@ -42,7 +42,7 @@ class RepeatMaskerReader(Reader):
             seq_start = int(seq_start_str)
             seq_end = int(seq_end_str)
             seq_left = int(seq_left_str[1:-1])
-            strand = {"+": "+", "C": "-"}[strand_str]
+            strand = cast(Literal["+", "-"], {"+": "+", "C": "-"}[strand_str])
 
             if "/" in repeat_class_family:
                 repeat_class, repeat_family = repeat_class_family.split("/", 1)

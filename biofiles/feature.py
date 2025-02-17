@@ -1,10 +1,17 @@
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, TextIO, Type, TypeVar
+from typing import Iterator, TextIO, Type, TypeVar, cast
 
 from biofiles.common import Reader, Strand
-from biofiles.types.feature import Feature, Gene, ThreePrimeUTR, Exon, UTR, Transcript
+from biofiles.types.feature import (
+    Feature,
+    Gene,
+    ThreePrimeUTR,
+    Exon,
+    UTR,
+    Transcript,
+)
 
 
 @dataclass
@@ -60,6 +67,12 @@ class Features:
             self.by_id[id_] = feature
 
 
+FeatureT = TypeVar("FeatureT", bound=Feature)
+GeneT = TypeVar("GeneT", bound=Gene)
+TranscriptT = TypeVar("TranscriptT", bound=Transcript)
+UTRT = TypeVar("UTRT", bound=UTR)
+
+
 class FeatureReader(Reader):
     def __init__(
         self, input_: TextIO | Path | str, /, streaming_window: int | None = 1000
@@ -107,10 +120,10 @@ class FeatureReader(Reader):
 
     def _finalize_draft(self, draft: FeatureDraft, result: Features) -> Feature:
         match draft.type_.lower():
-            case "gene":
-                feature = self._finalize_gene(draft, result)
-            case "transcript":
-                feature = self._finalize_transcript(draft, result)
+            case "gene" | "ncrna_gene":
+                feature = self._finalize_gene(draft, result, Gene)
+            case "transcript" | "mrna" | "lnc_rna":
+                feature = self._finalize_transcript(draft, result, Transcript)
             case "exon":
                 feature = self._finalize_exon(draft, result)
             case "three_prime_utr":
@@ -124,19 +137,23 @@ class FeatureReader(Reader):
             object.__setattr__(feature.parent, "children", new_children)
         return feature
 
-    def _finalize_gene(self, draft: FeatureDraft, result: Features) -> Feature:
+    def _finalize_gene(
+        self, draft: FeatureDraft, result: Features, type_: Type[GeneT]
+    ) -> Feature:
         feature = self._finalize_other(draft, result)
         name = draft.pick_attribute("gene_name", "Name")
         biotype = draft.pick_attribute("gene_biotype", "biotype", "gene_type")
         if name is None or biotype is None:
             return feature
-        return Gene(**feature.__dict__, name=name, biotype=biotype, transcripts=())
+        return type_(**feature.__dict__, name=name, biotype=biotype, transcripts=())
 
-    def _finalize_transcript(self, draft: FeatureDraft, result: Features) -> Feature:
+    def _finalize_transcript(
+        self, draft: FeatureDraft, result: Features, type_: Type[TranscriptT]
+    ) -> Feature:
         feature = self._finalize_other(draft, result)
         if not (gene := self._find_ancestor_of_type(feature, Gene)):
             return feature
-        transcript = Transcript(**feature.__dict__, gene=gene, exons=())
+        transcript = type_(**feature.__dict__, gene=gene, exons=())
         object.__setattr__(gene, "transcripts", gene.transcripts + (transcript,))
         return transcript
 
@@ -148,17 +165,13 @@ class FeatureReader(Reader):
         object.__setattr__(transcript, "exons", transcript.exons + (exon,))
         return exon
 
-    UTRT = TypeVar("UTRT", bound=UTR)
-
     def _finalize_utr(
         self, draft: FeatureDraft, result: Features, type_: Type[UTRT]
-    ) -> Feature | UTRT:
+    ) -> Feature:
         feature = self._finalize_other(draft, result)
         if not (transcript := self._find_ancestor_of_type(feature, Transcript)):
             return feature
         return type_(**feature.__dict__, gene=transcript.gene, transcript=transcript)
-
-    FeatureT = TypeVar("FeatureT", bound=Feature)
 
     def _find_ancestor_of_type(
         self, feature: Feature, t: Type[FeatureT]
@@ -166,7 +179,7 @@ class FeatureReader(Reader):
         ancestor = feature.parent
         while ancestor and not isinstance(ancestor, t):
             ancestor = ancestor.parent
-        return ancestor
+        return cast(FeatureT | None, ancestor)
 
     def _finalize_other(self, draft: FeatureDraft, result: Features) -> Feature:
         parent_id = self._extract_parent_id(draft)

@@ -26,7 +26,7 @@ class Feature:
     attributes: dict[str, str]
 
     id: str | None
-    parent: "GFFFeature | None"
+    parent: "Feature | None"
     children: tuple["Feature", ...]
 
 
@@ -50,7 +50,6 @@ class Transcript(Feature):
 class Exon(Feature):
     gene: Gene
     transcript: Transcript
-    # TODO mRNA
 
 
 @dataclass(frozen=True)

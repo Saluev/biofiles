@@ -31,7 +31,7 @@ if __name__ == "__main__":
             parsed_utrs = 0
             for feature in r:
                 total_features += 1
-                annotated_genes += feature.type_ == "gene"
+                annotated_genes += "gene" in feature.type_.lower()
                 annotated_exons += feature.type_ == "exon"
                 annotated_utrs += "utr" in feature.type_.lower()
                 parsed_genes += isinstance(feature, Gene)
