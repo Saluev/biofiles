@@ -1,8 +1,9 @@
-__all__ = ["GTFReader"]
+__all__ = ["GTFReader", "GTFWriter"]
 
 import sys
 from typing import Iterator
 
+from biofiles.common import Writer
 from biofiles.gff import GFFReader
 from biofiles.types.feature import Gene, Exon, Feature, UTR
 
@@ -13,10 +14,30 @@ class GTFReader(GFFReader):
 
     def _parse_attributes(self, line: str, attributes_str: str) -> dict[str, str]:
         return {
-            k: v.strip('"')
+            k: v.removeprefix('"').removesuffix('"').replace(r"\"", '"')
             for part in attributes_str.strip(";").split(";")
             for k, v in (part.strip().split(None, 1),)
         }
+
+
+class GTFWriter(Writer):
+    def write(self, feature: Feature) -> None:
+        fields = (
+            feature.sequence_id,
+            feature.source,
+            feature.type_,
+            str(feature.start_c + 1),
+            str(feature.end_c),
+            str(feature.score) if feature.score is not None else ".",
+            str(feature.strand) if feature.strand is not None else ".",
+            str(feature.phase) if feature.phase is not None else ".",
+            "; ".join(
+                f'{k} "' + v.replace('"', r"\"") + '"'
+                for k, v in feature.attributes.items()
+            ),
+        )
+        self._output.write("\t".join(fields))
+        self._output.write("\n")
 
 
 if __name__ == "__main__":
