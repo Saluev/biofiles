@@ -9,3 +9,10 @@ class Sequence:
     id: str
     description: str
     sequence: str
+
+
+@dataclass(frozen=True)
+class SequenceDescription:
+    id: str
+    length: int
+    byte_offset: int
