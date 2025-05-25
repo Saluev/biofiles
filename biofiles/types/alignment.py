@@ -1,7 +1,15 @@
 from dataclasses import dataclass
 
 
-__all__ = ["ReferenceSequence", "Alignment", "BAMTag"]
+__all__ = [
+    "Alignment",
+    "BAMFlag",
+    "BAMTag",
+    "CIGAR",
+    "CIGAROpKind",
+    "CIGAROperation",
+    "ReferenceSequence",
+]
 
 from enum import IntFlag
 

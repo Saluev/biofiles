@@ -183,7 +183,7 @@ class FeatureReader(Reader):
 
     def _finalize_other(self, draft: FeatureDraft, result: Features) -> Feature:
         parent_id = self._extract_parent_id(draft)
-        parent = result.by_id[parent_id] if parent_id is not None else None
+        parent = result.by_id.get(parent_id) if parent_id is not None else None
 
         return Feature(
             sequence_id=draft.sequence_id,
