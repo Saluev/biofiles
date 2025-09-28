@@ -11,6 +11,7 @@ from biofiles.types.feature import (
     Exon,
     UTR,
     Transcript,
+    CDS,
 )
 
 
@@ -126,6 +127,8 @@ class FeatureReader(Reader):
                 feature = self._finalize_transcript(draft, result, Transcript)
             case "exon":
                 feature = self._finalize_exon(draft, result)
+            case "cds":
+                feature = self._finalize_cds(draft, result)
             case "three_prime_utr":
                 feature = self._finalize_utr(draft, result, ThreePrimeUTR)
             case "utr":
@@ -161,9 +164,24 @@ class FeatureReader(Reader):
         feature = self._finalize_other(draft, result)
         if not (transcript := self._find_ancestor_of_type(feature, Transcript)):
             return feature
-        exon = Exon(**feature.__dict__, gene=transcript.gene, transcript=transcript)
+        exon = Exon(
+            **feature.__dict__, gene=transcript.gene, transcript=transcript, cds=None
+        )
         object.__setattr__(transcript, "exons", transcript.exons + (exon,))
         return exon
+
+    def _finalize_cds(self, draft: FeatureDraft, result: Features) -> Feature:
+        feature = self._finalize_other(draft, result)
+        if not (exon := self._find_ancestor_of_type(feature, Exon)):
+            return feature
+        cds = CDS(
+            **feature.__dict__,
+            exon=exon,
+            transcript=exon.transcript,
+            gene=exon.transcript.gene,
+        )
+        object.__setattr__(exon, "cds", cds)
+        return cds
 
     def _finalize_utr(
         self, draft: FeatureDraft, result: Features, type_: Type[UTRT]
@@ -211,6 +229,8 @@ class FeatureReader(Reader):
             id_ := draft.attributes.get("transcript_id")
         ):
             return id_
+        if draft.type_ == "exon" and (id_ := draft.attributes.get("exon_id")):
+            return id_
         return None
 
     def _extract_parent_id(self, draft: FeatureDraft) -> str | None:
@@ -221,5 +241,7 @@ class FeatureReader(Reader):
         if draft.type_ in ("exon", "UTR", "three_prime_UTR", "five_prime_UTR") and (
             id_ := draft.attributes.get("transcript_id")
         ):
+            return id_
+        if draft.type_.lower() == "cds" and (id_ := draft.attributes.get("exon_id")):
             return id_
         return None

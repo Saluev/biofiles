@@ -50,6 +50,7 @@ class Transcript(Feature):
 class Exon(Feature):
     gene: Gene
     transcript: Transcript
+    cds: "CDS | None"
 
 
 @dataclass(frozen=True)
@@ -61,3 +62,10 @@ class UTR(Feature):
 @dataclass(frozen=True)
 class ThreePrimeUTR(UTR):
     pass
+
+
+@dataclass(frozen=True)
+class CDS(Feature):
+    gene: Gene
+    transcript: Transcript
+    exon: Exon
