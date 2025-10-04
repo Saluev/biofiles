@@ -11,11 +11,15 @@ __all__ = ["RepeatMaskerReader"]
 
 class RepeatMaskerReader(Reader):
     def __iter__(self) -> Iterator[Repeat]:
+        has_passed_header = False
         for line in self._input:
-            parts = line.split("\t")
+            parts = line.split()
             if not (14 <= len(parts) <= 15):
                 # Probably some metainfo. No way to tell.
                 continue
+            if not has_passed_header and ("SW" in parts or "score" in parts):
+                continue
+            has_passed_header = True
 
             (
                 sw_score_str,
