@@ -9,7 +9,7 @@ class Relation:
     """Equivalent of SQL foreign key — declarative description
     of a relation between two types of features."""
 
-    id_field_name: str
+    id_attribute_name: str
     """ Name of GTF/GFF attribute which contains related feature ID. """
 
     inverse: "InverseRelation | None" = None
@@ -27,7 +27,7 @@ class InverseRelation:
 
 @dataclass_transform()
 class FeatureMetaclass(type):
-    __id_field_name__: str
+    __id_attribute_name__: str
     """ Name of GTF/GFF attribute which contains the type-unique ID. """
 
     __filter_type__: str
@@ -46,10 +46,10 @@ class FeatureMetaclass(type):
         namespace,
         type: str | None = None,
         starts: Field | None = None,
-        ends: Field | None = None
+        ends: Field | None = None,
     ):
         result = super().__new__(cls, name, bases, namespace)
-        result.__id_field_name__ = cls._find_id_field(namespace)
+        result.__id_attribute_name__ = cls._find_id_attribute(namespace)
         result._fill_relation_classes(namespace)
         result._fill_filters(type=type, starts=starts, ends=ends)
 
@@ -59,16 +59,16 @@ class FeatureMetaclass(type):
         return result
 
     @staticmethod
-    def _find_id_field(namespace) -> str:
+    def _find_id_attribute(namespace) -> str:
         result = ""
         for key, value in namespace.items():
             match value:
-                case Field(metadata={"id_field_name": id_field_name}):
+                case Field(metadata={"id_attribute_name": id_attribute_name}):
                     if result:
                         raise TypeError(
                             f"should specify exactly one id_field() in class {result.__name__}"
                         )
-                    result = id_field_name
+                    result = id_attribute_name
         return result
 
     def _fill_relation_classes(cls, namespace) -> None:
@@ -120,15 +120,15 @@ class Feature(metaclass=FeatureMetaclass):
 
 
 def id_field(source: str) -> Field:
-    return dataclass_field(metadata={"id_field_name": source})
+    return dataclass_field(metadata={"id_attribute_name": source})
 
 
 def field(source: str) -> Field:
-    return dataclass_field(metadata={"field_name": source})
+    return dataclass_field(metadata={"attribute_name": source})
 
 
 def relation(source: str, *, one_to_one: bool = False) -> tuple[Field, Field]:
-    forward = Relation(id_field_name=source)
+    forward = Relation(id_attribute_name=source)
     inverse = InverseRelation(inverse=forward, one_to_one=one_to_one)
     forward.inverse = inverse
 

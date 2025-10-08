@@ -31,7 +31,7 @@ class FeatureTypes:
 
     def __init__(self, feature_types: list[FeatureMetaclass]) -> None:
         for ft in feature_types:
-            if not ft.__id_field_name__:
+            if not ft.__id_attribute_name__:
                 raise ValueError(
                     f"{ft.__name__} is not proper feature type - has no id_field()"
                 )
@@ -66,7 +66,7 @@ class FeatureDrafts:
         self.drafts.append(draft)
         if class_ := self.feature_types.unique_type_mapping.get(draft.type_):
             draft.class_ = class_
-            draft.id = draft.attributes[class_.__id_field_name__]
+            draft.id = draft.attributes[class_.__id_attribute_name__]
             self.register(draft)
 
     def register(self, draft: FeatureDraft) -> None:
@@ -111,7 +111,7 @@ class FeatureReader(Reader):
                 )
             ft = matching_fts[0]
             fd.class_ = ft
-            fd.id = fd.attributes[ft.__id_field_name__]
+            fd.id = fd.attributes[ft.__id_attribute_name__]
             fds.register(fd)
 
     def _check_filters(
@@ -139,7 +139,7 @@ class FeatureReader(Reader):
         self, fds: FeatureDrafts, fd: FeatureDraft, r: Relation
     ) -> FeatureDraft:
         related_class = r.inverse.class_
-        related_id = fd.attributes[r.id_field_name]
+        related_id = fd.attributes[r.id_attribute_name]
         try:
             return fds.by_class_and_id[related_class, related_id]
         except KeyError as exc:
