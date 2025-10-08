@@ -1,4 +1,4 @@
-"""Feature dialect for HAVANA+Ensembl .gtf files (e.g. T2T annotation)."""
+"""Feature dialect for GENCODE .gtf/.gff3 files."""
 
 from enum import StrEnum
 
