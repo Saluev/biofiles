@@ -4,6 +4,7 @@ import sys
 from typing import Iterator
 
 from biofiles.common import Writer
+from biofiles.dialects.gencode import GENCODE_FEATURE_TYPES
 from biofiles.gff import GFFReader
 from biofiles.types.feature import Gene, Exon, Feature, UTR, CDS
 
@@ -42,7 +43,7 @@ class GTFWriter(Writer):
 
 if __name__ == "__main__":
     for path in sys.argv[1:]:
-        with GTFReader(path) as r:
+        with GTFReader(path, feature_types=GENCODE_FEATURE_TYPES) as r:
             total_features = 0
             annotated_genes = 0
             annotated_exons = 0
