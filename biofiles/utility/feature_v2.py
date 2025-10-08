@@ -21,6 +21,8 @@ class FeatureDraft:
     type_: str
     start_original: int
     end_original: int
+    start_c: int
+    end_c: int
     score: float | None
     strand: Strand | None
     phase: int | None
@@ -129,6 +131,8 @@ class FeatureReader(Reader):
                 type_=fd.type_,
                 start_original=fd.start_original,
                 end_original=fd.end_original,
+                start_c=fd.start_c,
+                end_c=fd.end_c,
                 score=fd.score,
                 strand=fd.strand,
                 phase=fd.phase,
