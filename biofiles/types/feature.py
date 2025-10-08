@@ -65,6 +65,11 @@ class ThreePrimeUTR(UTR):
 
 
 @dataclass(frozen=True)
+class FivePrimeUTR(UTR):
+    pass
+
+
+@dataclass(frozen=True)
 class CDS(Feature):
     gene: Gene
     transcript: Transcript

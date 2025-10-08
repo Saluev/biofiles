@@ -12,6 +12,7 @@ from biofiles.types.feature import (
     UTR,
     Transcript,
     CDS,
+    FivePrimeUTR,
 )
 
 
@@ -131,6 +132,8 @@ class FeatureReader(Reader):
                 feature = self._finalize_cds(draft, result)
             case "three_prime_utr":
                 feature = self._finalize_utr(draft, result, ThreePrimeUTR)
+            case "five_prime_utr":
+                feature = self._finalize_utr(draft, result, FivePrimeUTR)
             case "utr":
                 feature = self._finalize_utr(draft, result, UTR)
             case _:
