@@ -6,7 +6,7 @@ from typing import Iterator
 from biofiles.common import Writer
 from biofiles.dialects.gencode import GENCODE_FEATURE_TYPES
 from biofiles.gff import GFFReader
-from biofiles.types.feature import Gene, Exon, Feature, UTR, CDS
+from biofiles.dialects.gencode import Gene, Exon, Feature, UTR, CDS
 
 
 class GTFReader(GFFReader):

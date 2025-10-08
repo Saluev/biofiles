@@ -6,7 +6,7 @@ from biofiles.common import Strand, Writer
 from biofiles.dialects.gencode import GENCODE_FEATURE_TYPES
 from biofiles.utility.cli import parse_pipeline_args
 from biofiles.utility.feature_v2 import FeatureReader, FeatureDraft, FeatureDrafts
-from biofiles.types.feature import Feature, Gene, Exon, UTR
+from biofiles.dialects.gencode import Feature, Gene, Exon, UTR
 
 __all__ = ["GFFReader", "GFF3Writer"]
 
@@ -59,6 +59,8 @@ class GFFReader(FeatureReader):
                 type_=type_,
                 start_original=int(start_str),
                 end_original=int(end_str),
+                start_c=int(start_str) - 1,
+                end_c=int(end_str),
                 score=score,
                 strand=strand,
                 phase=phase,

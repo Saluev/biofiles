@@ -17,6 +17,8 @@ class TranscriptType(StrEnum):
 
 
 transcript_gene, gene_transcripts = relation(source="gene_id")
+selenocysteine_gene, _ = relation(source="gene_id")
+selenocysteine_transcript, _ = relation(source="transcript_id")
 exon_transcript, transcript_exons = relation(source="transcript_id")
 exon_gene, _ = relation(source="gene_id")
 cds_exon, exon_cds = relation(source="exon_id", one_to_one=True)
@@ -58,6 +60,12 @@ class Transcript(Feature, type="transcript"):
     stop_codon: "StopCodon | None" = transcript_stop_codon
 
 
+class Selenocysteine(Feature, type="selenocysteine"):
+    id: str = no_id_field()
+    gene: Gene = selenocysteine_gene
+    transcript: Transcript = selenocysteine_transcript
+
+
 class Exon(Feature, type="exon"):
     id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     number: int = field(source="exon_number")
@@ -95,6 +103,7 @@ class StopCodon(Feature, type="stop_codon"):
 GENCODE_FEATURE_TYPES = [
     Gene,
     Transcript,
+    Selenocysteine,
     Exon,
     CDS,
     UTR,
