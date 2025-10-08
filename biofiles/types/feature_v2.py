@@ -1,4 +1,5 @@
 from dataclasses import dataclass, Field, field as dataclass_field
+from enum import Enum
 from typing import dataclass_transform, Type, Any, TypeAlias
 
 from biofiles.common import Strand
@@ -126,6 +127,7 @@ class FeatureMetaclass(type):
         default_arguments: list[str] = []
         non_default_arguments: list[str] = []
         assignments: list[str] = []
+        globals: dict[str, Any] = {}
 
         key_to_ancestor: dict[str, Type] = {}
         for ancestor in cls.__mro__[:-1]:
@@ -139,7 +141,9 @@ class FeatureMetaclass(type):
                     continue
 
                 field_value = getattr(cls, key, None)
-                argument, assignment = cls._compose_field(key, value, field_value)
+                argument, assignment = cls._compose_field(
+                    key, value, field_value, globals
+                )
 
                 if argument and argument.endswith(" = None"):
                     default_arguments.append(argument)
@@ -151,11 +155,15 @@ class FeatureMetaclass(type):
         all_arguments = [*non_default_arguments, *default_arguments]
         source_code = f"def __init__(self, {', '.join(all_arguments)}):\n    {body}"
         locals = {}
-        exec(source_code, {"get_composite_field": get_composite_field}, locals)
+        exec(source_code, globals, locals)
         cls.__init__ = locals["__init__"]
 
     def _compose_field(
-        cls, field_name: str, field_annotation: Any, field_value: Field | None
+        cls,
+        field_name: str,
+        field_annotation: Any,
+        field_value: Field | None,
+        globals: dict[str, Any],
     ) -> tuple[str | None, str]:
         argument: str | None
         assignment: str
@@ -171,11 +179,16 @@ class FeatureMetaclass(type):
             ):
                 argument = None
                 if isinstance(attribute_name, str):
-                    assignment = (
-                        f"self.{field_name} = attributes[{repr(attribute_name)}]"
-                    )
+                    getter = f"attributes[{repr(attribute_name)}]"
                 else:
-                    assignment = f"self.{field_name} = get_composite_field(attributes, {repr(attribute_name)})"
+                    globals["get_composite_field"] = get_composite_field
+                    getter = f"get_composite_field(attributes, {repr(attribute_name)})"
+                if issubclass(field_annotation, (int, float)):
+                    getter = f"{field_annotation.__name__}({getter})"
+                elif issubclass(field_annotation, Enum):
+                    globals[field_annotation.__name__] = field_annotation
+                    getter = f"{field_annotation.__name__}({getter})"
+                assignment = f"self.{field_name} = {getter}"
                 # TODO necessary conversions, proper exceptions
             case None:
                 argument = f"{field_name}: {cls._format_type_arg(field_annotation, optional=False)}"
