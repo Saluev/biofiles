@@ -26,6 +26,9 @@ class FeatureDraft:
 
 
 class FeatureTypes:
+    ambiguous_type_mapping: dict[str, list[FeatureMetaclass]]
+    unique_type_mapping: dict[str, FeatureMetaclass]
+
     def __init__(self, feature_types: list[FeatureMetaclass]) -> None:
         for ft in feature_types:
             if not ft.__id_field_name__:
@@ -33,10 +36,8 @@ class FeatureTypes:
                     f"{ft.__name__} is not proper feature type - has no id_field()"
                 )
 
-        self.ambiguous_type_mapping: dict[str, list[FeatureMetaclass]] = defaultdict(
-            list
-        )
-        self.unique_type_mapping: dict[str, FeatureMetaclass] = {}
+        self.ambiguous_type_mapping = defaultdict(list)
+        self.unique_type_mapping = {}
 
         for ft in feature_types:
             self.ambiguous_type_mapping[ft.__filter_type__].append(ft)
@@ -85,13 +86,13 @@ class FeatureReader(Reader):
         self._feature_types = FeatureTypes(feature_types)
 
     def __iter__(self) -> Iterator[Feature]:
-        raise NotImplementedError
+        raise NotImplementedError  # TODO
 
     def _finalize_drafts(self, fds: FeatureDrafts) -> Iterator[Feature]:
         self._choose_classes(fds)
-        pass
+        raise NotImplementedError  # TODO
 
-    def _choose_classes(self, fds: FeatureDrafts) -> Iterator[Feature]:
+    def _choose_classes(self, fds: FeatureDrafts) -> None:
         for fd in fds.drafts:
             if fd.class_:
                 continue
