@@ -27,9 +27,19 @@ class InverseRelation:
     class_: type | None = None
 
 
+def get_composite_field(
+    attributes: dict[str, str], source: Source
+) -> str | tuple[str, ...] | None:
+    if source is None:
+        return None
+    if isinstance(source, str):
+        return attributes[source]
+    return tuple(attributes[attribute_name] for attribute_name in source)
+
+
 @dataclass_transform()
 class FeatureMetaclass(type):
-    __id_attribute_source__: Source
+    __id_attribute_source__: Source | None
     """ Name of GTF/GFF attribute(s) which contains the type-unique ID. """
 
     __filter_type__: str
@@ -64,7 +74,7 @@ class FeatureMetaclass(type):
 
     @staticmethod
     def _find_id_attribute_source(namespace) -> str:
-        result = ""
+        result: str | None = None
         for key, value in namespace.items():
             match value:
                 case Field(metadata={"id_attribute_name": id_attribute_source}):
@@ -141,7 +151,7 @@ class FeatureMetaclass(type):
         all_arguments = [*non_default_arguments, *default_arguments]
         source_code = f"def __init__(self, {', '.join(all_arguments)}):\n    {body}"
         locals = {}
-        exec(source_code, {}, locals)
+        exec(source_code, {"get_composite_field": get_composite_field}, locals)
         cls.__init__ = locals["__init__"]
 
     def _compose_field(
@@ -153,11 +163,19 @@ class FeatureMetaclass(type):
             case Field(metadata={"relation": _}):
                 argument = f"{field_name}: {cls._format_type_arg(field_annotation, optional=True)} = None"
                 assignment = f"self.{field_name} = {field_name}"
+            case Field(metadata={"id_attribute_name": None}):
+                argument = None
+                assignment = f"self.{field_name} = None"
             case Field(metadata={"attribute_name": attribute_name}) | Field(
                 metadata={"id_attribute_name": attribute_name}
             ):
                 argument = None
-                assignment = f"self.{field_name} = attributes[{repr(attribute_name)}]"
+                if isinstance(attribute_name, str):
+                    assignment = (
+                        f"self.{field_name} = attributes[{repr(attribute_name)}]"
+                    )
+                else:
+                    assignment = f"self.{field_name} = get_composite_field(attributes, {repr(attribute_name)})"
                 # TODO necessary conversions, proper exceptions
             case None:
                 argument = f"{field_name}: {cls._format_type_arg(field_annotation, optional=False)}"
@@ -202,6 +220,10 @@ class Feature(metaclass=FeatureMetaclass):
 
 def id_field(source: Source) -> Field:
     return dataclass_field(metadata={"id_attribute_name": source})
+
+
+def no_id_field() -> Field:
+    return dataclass_field(metadata={"id_attribute_name": None})
 
 
 def field(source: Source) -> Field:
