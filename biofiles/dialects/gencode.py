@@ -1,8 +1,9 @@
 """Feature dialect for GENCODE .gtf/.gff3 files."""
 
 from enum import StrEnum
+from types import NoneType
 
-from biofiles.types.feature_v2 import Feature, id_field, field, relation
+from biofiles.types.feature_v2 import Feature, id_field, field, relation, no_id_field
 
 
 class GeneType(StrEnum):
@@ -71,21 +72,12 @@ class CDS(Feature, type="cds"):
 
 
 class UTR(Feature, type="utr"):
-    id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
+    id: NoneType = no_id_field()
     transcript: Transcript = utr_transcript
     gene: Gene = utr_gene
 
 
-class FivePrimeUTR(UTR, starts=five_prime_utr_transcript):
-    id: str = id_field(source="transcript_id")
-    transcript: Transcript = five_prime_utr_transcript
-    gene: Gene = five_prime_utr_gene
-
-
-class ThreePrimeUTR(UTR, ends=three_prime_utr_transcript):
-    id: str = id_field(source="transcript_id")
-    transcript: Transcript = three_prime_utr_transcript
-    gene: Gene = three_prime_utr_gene
+# GENCODE doesn't distinguish between 5' and 3' UTRs at the annotation level.
 
 
 class StartCodon(Feature, type="start_codon"):
@@ -105,8 +97,7 @@ GENCODE_FEATURE_TYPES = [
     Transcript,
     Exon,
     CDS,
-    FivePrimeUTR,
-    ThreePrimeUTR,
+    UTR,
     StartCodon,
     StopCodon,
 ]

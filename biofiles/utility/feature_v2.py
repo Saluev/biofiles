@@ -4,7 +4,13 @@ from pathlib import Path
 from typing import Any, Iterator, TextIO
 
 from biofiles.common import Strand, Reader
-from biofiles.types.feature_v2 import Feature, FeatureMetaclass, Relation, Source
+from biofiles.types.feature_v2 import (
+    Feature,
+    FeatureMetaclass,
+    Relation,
+    Source,
+    get_composite_field,
+)
 
 
 @dataclass
@@ -30,12 +36,6 @@ class FeatureTypes:
     unique_type_mapping: dict[str, FeatureMetaclass]
 
     def __init__(self, feature_types: list[FeatureMetaclass]) -> None:
-        for ft in feature_types:
-            if not ft.__id_attribute_source__:
-                raise ValueError(
-                    f"{ft.__name__} is not proper feature type - has no id_field()"
-                )
-
         self.ambiguous_type_mapping = defaultdict(list)
         self.unique_type_mapping = {}
 
@@ -66,10 +66,14 @@ class FeatureDrafts:
         self.drafts.append(draft)
         if class_ := self.feature_types.unique_type_mapping.get(draft.type_.lower()):
             draft.class_ = class_
-            draft.id = _get_by_source(draft.attributes, class_.__id_attribute_source__)
+            draft.id = get_composite_field(
+                draft.attributes, class_.__id_attribute_source__
+            )
             self.register(draft)
 
     def register(self, draft: FeatureDraft) -> None:
+        if draft.id is None:
+            return
         if (key := (draft.class_, draft.id)) in self.by_class_and_id:
             raise ValueError(
                 f"duplicate feature ID {draft.id} for class {draft.class_.__name__}"
@@ -114,7 +118,7 @@ class FeatureReader(Reader):
                 )
             ft = matching_fts[0]
             fd.class_ = ft
-            fd.id = _get_by_source(fd.attributes, ft.__id_attribute_source__)
+            fd.id = get_composite_field(fd.attributes, ft.__id_attribute_source__)
             fds.register(fd)
 
     def _instantiate_objects(self, fds: FeatureDrafts) -> None:
@@ -132,7 +136,7 @@ class FeatureReader(Reader):
             )
 
     def _fill_relations(self, fds: FeatureDrafts) -> None:
-        pass
+        pass  # TODO
 
     def _check_filters(
         self, fds: FeatureDrafts, fd: FeatureDraft, ft: FeatureMetaclass
@@ -167,9 +171,3 @@ class FeatureReader(Reader):
                 f"can't find related {related_class.__name__} for "
                 f"{fd.class_.__name__} with attributes {fd.attributes!r}"
             ) from exc
-
-
-def _get_by_source(attributes: dict[str, str], source: Source) -> str | tuple[str, ...]:
-    if isinstance(source, str):
-        return attributes[source]
-    return tuple(attributes[attribute_name] for attribute_name in source)
