@@ -52,14 +52,13 @@ class Transcript(Feature, type="transcript"):
     name: str = field(source="transcript_name")
     gene: Gene = transcript_gene
     exons: list["Exon"] = transcript_exons
-    five_prime_utr: "FivePrimeUTR | None" = transcript_five_prime_utr
-    three_prime_utr: "ThreePrimeUTR | None" = transcript_three_prime_utr
+    utrs: list["UTR"] = transcript_utrs
     start_codon: "StartCodon | None" = transcript_start_codon
     stop_codon: "StopCodon | None" = transcript_stop_codon
 
 
 class Exon(Feature, type="exon"):
-    id: str = id_field(source="exon_id")
+    id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     number: int = field(source="exon_number")
     transcript: Transcript = exon_transcript
     gene: Gene = exon_gene
@@ -67,12 +66,12 @@ class Exon(Feature, type="exon"):
 
 
 class CDS(Feature, type="cds"):
-    id: str = id_field(source="exon_id")
+    id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     exon: Exon = cds_exon
 
 
 class UTR(Feature, type="utr"):
-    id: str = id_field(source="transcript_id")
+    id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     transcript: Transcript = utr_transcript
     gene: Gene = utr_gene
 
@@ -90,12 +89,24 @@ class ThreePrimeUTR(UTR, ends=three_prime_utr_transcript):
 
 
 class StartCodon(Feature, type="start_codon"):
-    id: str = id_field(source="transcript_id")
+    id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     transcript: Transcript = start_codon_transcript
     exon: Exon = start_codon_exon
 
 
 class StopCodon(Feature, type="stop_codon"):
-    id: str = id_field(source="transcript_id")
+    id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     transcript: Transcript = stop_codon_transcript
     exon: Exon = stop_codon_exon
+
+
+GENCODE_FEATURE_TYPES = [
+    Gene,
+    Transcript,
+    Exon,
+    CDS,
+    FivePrimeUTR,
+    ThreePrimeUTR,
+    StartCodon,
+    StopCodon,
+]

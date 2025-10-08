@@ -1,7 +1,9 @@
 from dataclasses import dataclass, Field, field as dataclass_field
-from typing import dataclass_transform, Type, Any
+from typing import dataclass_transform, Type, Any, TypeAlias
 
 from biofiles.common import Strand
+
+Source: TypeAlias = str | tuple[str, ...]
 
 
 @dataclass
@@ -9,8 +11,8 @@ class Relation:
     """Equivalent of SQL foreign key — declarative description
     of a relation between two types of features."""
 
-    id_attribute_name: str
-    """ Name of GTF/GFF attribute which contains related feature ID. """
+    id_attribute_source: Source
+    """ Name of GTF/GFF attribute(s) which contains related feature ID. """
 
     inverse: "InverseRelation | None" = None
 
@@ -27,8 +29,8 @@ class InverseRelation:
 
 @dataclass_transform()
 class FeatureMetaclass(type):
-    __id_attribute_name__: str
-    """ Name of GTF/GFF attribute which contains the type-unique ID. """
+    __id_attribute_source__: Source
+    """ Name of GTF/GFF attribute(s) which contains the type-unique ID. """
 
     __filter_type__: str
     """ Filter by feature type ("gene", "transcript", etc.). """
@@ -49,7 +51,7 @@ class FeatureMetaclass(type):
         ends: Field | None = None,
     ):
         result = super().__new__(cls, name, bases, namespace)
-        result.__id_attribute_name__ = cls._find_id_attribute(namespace)
+        result.__id_attribute_source__ = cls._find_id_attribute_source(namespace)
         result._fill_relation_classes(namespace)
         result._fill_filters(type=type, starts=starts, ends=ends)
         result._fill_slots()
@@ -61,16 +63,16 @@ class FeatureMetaclass(type):
         return result
 
     @staticmethod
-    def _find_id_attribute(namespace) -> str:
+    def _find_id_attribute_source(namespace) -> str:
         result = ""
         for key, value in namespace.items():
             match value:
-                case Field(metadata={"id_attribute_name": id_attribute_name}):
+                case Field(metadata={"id_attribute_name": id_attribute_source}):
                     if result:
                         raise TypeError(
                             f"should specify exactly one id_field() in class {result.__name__}"
                         )
-                    result = id_attribute_name
+                    result = id_attribute_source
         return result
 
     def _fill_relation_classes(cls, namespace) -> None:
@@ -156,6 +158,7 @@ class FeatureMetaclass(type):
             ):
                 argument = None
                 assignment = f"self.{field_name} = attributes[{repr(attribute_name)}]"
+                # TODO necessary conversions, proper exceptions
             case None:
                 argument = f"{field_name}: {cls._format_type_arg(field_annotation, optional=False)}"
                 assignment = f"self.{field_name} = {field_name}"
@@ -197,16 +200,16 @@ class Feature(metaclass=FeatureMetaclass):
         return f"{type(self).__name__}({self.sequence_id}:{self.start_c}-{self.end_c})"
 
 
-def id_field(source: str) -> Field:
+def id_field(source: Source) -> Field:
     return dataclass_field(metadata={"id_attribute_name": source})
 
 
-def field(source: str) -> Field:
+def field(source: Source) -> Field:
     return dataclass_field(metadata={"attribute_name": source})
 
 
-def relation(source: str, *, one_to_one: bool = False) -> tuple[Field, Field]:
-    forward_relation = Relation(id_attribute_name=source)
+def relation(source: Source, *, one_to_one: bool = False) -> tuple[Field, Field]:
+    forward_relation = Relation(id_attribute_source=source)
     inverse_relation = InverseRelation(inverse=forward_relation, one_to_one=one_to_one)
     forward_relation.inverse = inverse_relation
 

@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Iterator, cast, TextIO
 
 from biofiles.common import Strand, Writer
+from biofiles.dialects.gencode import GENCODE_FEATURE_TYPES
 from biofiles.utility.cli import parse_pipeline_args
-from biofiles.utility.feature import FeatureReader, FeatureDraft, FeatureDrafts
+from biofiles.utility.feature_v2 import FeatureReader, FeatureDraft, FeatureDrafts
 from biofiles.types.feature import Feature, Gene, Exon, UTR
 
 __all__ = ["GFFReader", "GFF3Writer"]
@@ -25,7 +26,7 @@ class GFFReader(FeatureReader):
             raise ValueError(f"unexpected line {line!r}, expected version")
 
     def _read_gff3(self) -> Iterator[Feature]:
-        drafts = FeatureDrafts()
+        drafts = FeatureDrafts(self._feature_types)
         idx = 0
         for line in self._input:
             if line.startswith("#"):
@@ -51,14 +52,6 @@ class GFFReader(FeatureReader):
             attributes = self._parse_attributes(line, attributes_str)
 
             parent_id = attributes.get("Parent", None)
-            # if parent_id is None:
-            #     yield from self._finalize_drafts(drafts)
-            #     drafts = _FeatureDrafts()
-            if parent_id is not None and parent_id not in drafts.by_id:
-                raise ValueError(
-                    f"unexpected line {line!r}, parent ID not among recent feature IDs"
-                )
-
             draft = FeatureDraft(
                 idx=idx,
                 sequence_id=sequence_id,
@@ -74,9 +67,7 @@ class GFFReader(FeatureReader):
             drafts.add(draft)
             idx += 1
 
-            # yield from self._finalize_drafts(drafts, self._streaming_window)
-
-        yield from self._finalize_drafts(drafts, None)
+        yield from self._finalize_drafts(drafts)
 
     def _parse_score(self, line: str, score_str: str) -> float | None:
         if score_str == ".":
@@ -147,7 +138,7 @@ if __name__ == "__main__":
         pipeline.mapper = lambda f: print(old_mapper(f))
 
     for path in pipeline.inputs:
-        with GFFReader(path) as r:
+        with GFFReader(path, feature_types=GENCODE_FEATURE_TYPES) as r:
             total_features = 0
             annotated_genes = 0
             annotated_exons = 0
