@@ -42,7 +42,8 @@ class FeatureTypes:
         self.unique_type_mapping = {}
 
         for ft in feature_types:
-            self.ambiguous_type_mapping[ft.__filter_type__].append(ft)
+            for type in ft.__filter_type__:
+                self.ambiguous_type_mapping[type].append(ft)
 
         for key, fts in [*self.ambiguous_type_mapping.items()]:
             if len(fts) == 1:

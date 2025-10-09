@@ -43,7 +43,7 @@ class FeatureMetaclass(type):
     __id_attribute_source__: Source | None
     """ Name of GTF/GFF attribute(s) which contains the type-unique ID. """
 
-    __filter_type__: str
+    __filter_type__: tuple[str, ...]
     """ Filter by feature type ("gene", "transcript", etc.). """
 
     __filter_starts__: Relation | None
@@ -57,7 +57,7 @@ class FeatureMetaclass(type):
         name,
         bases,
         namespace,
-        type: str | None = None,
+        type: str | tuple[str, ...] | None = None,
         starts: Field | None = None,
         ends: Field | None = None,
     ):
@@ -101,12 +101,12 @@ class FeatureMetaclass(type):
     def _fill_filters(
         cls,
         *,
-        type: str | None = None,
+        type: str | tuple[str, ...] | None = None,
         starts: Field | None = None,
         ends: Field | None = None,
     ) -> None:
         if type is not None:
-            cls.__filter_type__ = type
+            cls.__filter_type__ = (type,) if isinstance(type, str) else type
 
         cls.__filter_starts__ = None
         if starts is not None:
