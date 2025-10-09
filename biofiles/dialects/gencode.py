@@ -7,17 +7,21 @@ from biofiles.types.feature_v2 import Feature, id_field, field, relation, no_id_
 
 
 class GeneType(StrEnum):
+    ARTIFACT = "artifact"
     IG_C_GENE = "IG_C_gene"
     IG_C_PSEUDOGENE = "IG_C_pseudogene"
     IG_D_GENE = "IG_D_gene"
     IG_D_PSEUDOGENE = "IG_D_pseudogene"
     IG_J_GENE = "IG_J_gene"
     IG_J_PSEUDOGENE = "IG_J_pseudogene"
+    IG_PSEUDOGENE = "IG_pseudogene"
     IG_V_GENE = "IG_V_gene"
     IG_V_PSEUDOGENE = "IG_V_pseudogene"
     LNCRNA = "lncRNA"
     MIRNA = "miRNA"
     MISC_RNA = "misc_RNA"
+    MT_RRNA = "Mt_rRNA"
+    MT_TRNA = "Mt_tRNA"
     PROCESSED_PSEUDOGENE = "processed_pseudogene"
     PROTEIN_CODING = "protein_coding"
     RIBOZYME = "ribozyme"
@@ -47,17 +51,21 @@ class GeneType(StrEnum):
 
 
 class TranscriptType(StrEnum):
+    ARTIFACT = "artifact"
     IG_C_GENE = "IG_C_gene"
     IG_C_PSEUDOGENE = "IG_C_pseudogene"
     IG_D_GENE = "IG_D_gene"
     IG_D_PSEUDOGENE = "IG_D_pseudogene"
     IG_J_GENE = "IG_J_gene"
     IG_J_PSEUDOGENE = "IG_J_pseudogene"
+    IG_PSEUDOGENE = "IG_pseudogene"
     IG_V_GENE = "IG_V_gene"
     IG_V_PSEUDOGENE = "IG_V_pseudogene"
     LNCRNA = "lncRNA"
     MIRNA = "miRNA"
     MISC_RNA = "misc_RNA"
+    MT_RRNA = "Mt_rRNA"
+    MT_TRNA = "Mt_tRNA"
     PROCESSED_PSEUDOGENE = "processed_pseudogene"
     PROTEIN_CODING = "protein_coding"
     RIBOZYME = "ribozyme"
@@ -86,8 +94,10 @@ class TranscriptType(StrEnum):
     VAULT_RNA = "vault_RNA"
 
     # Transcript-specific:
+    NON_STOP_DECAY = "non_stop_decay"
     NONSENSE_MEDIATED_DECAY = "nonsense_mediated_decay"
     PROCESSED_TRANSCRIPT = "processed_transcript"
+    PROTEIN_CODING_CDS_NOT_DEFINED = "protein_coding_CDS_not_defined"
     PROTEIN_CODING_LOF = "protein_coding_LoF"
     RETAINED_INTRON = "retained_intron"
 
@@ -136,7 +146,9 @@ class Transcript(Feature, type="transcript"):
     stop_codon: "StopCodon | None" = transcript_stop_codon
 
 
-class Selenocysteine(Feature, type="selenocysteine"):
+class Selenocysteine(
+    Feature, type=("selenocysteine", "stop_codon_redefined_as_selenocysteine")
+):
     id: str = no_id_field()
     gene: Gene = selenocysteine_gene
     transcript: Transcript = selenocysteine_transcript
@@ -161,7 +173,16 @@ class UTR(Feature, type="utr"):
     gene: Gene = utr_gene
 
 
-# GENCODE doesn't distinguish between 5' and 3' UTRs at the annotation level.
+class FivePrimeUTR(UTR, type="five_prime_utr"):
+    id: NoneType = no_id_field()
+    transcript: Transcript = five_prime_utr_transcript
+    gene: Gene = five_prime_utr_gene
+
+
+class ThreePrimeUTR(UTR, type="three_prime_utr"):
+    id: NoneType = no_id_field()
+    transcript: Transcript = three_prime_utr_transcript
+    gene: Gene = three_prime_utr_gene
 
 
 class StartCodon(Feature, type="start_codon"):
@@ -183,6 +204,8 @@ GENCODE_FEATURE_TYPES = [
     Exon,
     CDS,
     UTR,
+    FivePrimeUTR,
+    ThreePrimeUTR,
     StartCodon,
     StopCodon,
 ]
