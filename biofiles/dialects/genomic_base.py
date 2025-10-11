@@ -1,4 +1,4 @@
-from biofiles.types.feature_v2 import Feature
+from biofiles.types.feature import Feature
 
 
 class Gene(Feature):

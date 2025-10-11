@@ -8,7 +8,7 @@ from biofiles.common import Writer
 from biofiles.dialects.detector import detect_dialect
 from biofiles.dialects.genomic_base import Gene, Exon, Feature, CDS, UTR
 from biofiles.gff import RawGFFReader
-from biofiles.utility.feature_v2 import FeatureReader, RawFeatureReader, FeatureDraft
+from biofiles.utility.feature import FeatureReader, RawFeatureReader, FeatureDraft
 
 
 class RawGTFReader(RawGFFReader):

@@ -10,7 +10,7 @@ from biofiles.dialects.genomic_base import (
     CDS as BaseCDS,
     UTR as BaseUTR,
 )
-from biofiles.types.feature_v2 import (
+from biofiles.types.feature import (
     Feature,
     id_field,
     field,

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Iterator, TextIO, Type
 
 from biofiles.common import Strand, Reader
-from biofiles.types.feature_v2 import (
+from biofiles.types.feature import (
     Feature,
     FeatureMetaclass,
     Relation,

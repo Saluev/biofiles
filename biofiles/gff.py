@@ -6,7 +6,7 @@ from biofiles.common import Strand, Writer
 from biofiles.dialects.detector import detect_dialect
 from biofiles.dialects.genomic_base import Feature, Gene, Exon, UTR
 from biofiles.utility.cli import parse_pipeline_args
-from biofiles.utility.feature_v2 import (
+from biofiles.utility.feature import (
     FeatureReader,
     FeatureDraft,
     RawFeatureReader,
