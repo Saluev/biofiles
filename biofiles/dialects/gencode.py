@@ -10,7 +10,14 @@ from biofiles.dialects.genomic_base import (
     CDS as BaseCDS,
     UTR as BaseUTR,
 )
-from biofiles.types.feature_v2 import Feature, id_field, field, relation, no_id_field
+from biofiles.types.feature_v2 import (
+    Feature,
+    id_field,
+    field,
+    relation,
+    no_id_field,
+    Dialect,
+)
 
 
 class GeneType(StrEnum):
@@ -225,3 +232,4 @@ GENCODE_FEATURE_TYPES = [
     StartCodon,
     StopCodon,
 ]
+GENCODE_DIALECT = Dialect(name="GENCODE", feature_types=GENCODE_FEATURE_TYPES)
