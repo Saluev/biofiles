@@ -9,6 +9,8 @@ from biofiles.dialects.genomic_base import (
     Exon as BaseExon,
     CDS as BaseCDS,
     UTR as BaseUTR,
+    FivePrimeUTR as BaseFivePrimeUTR,
+    ThreePrimeUTR as BaseThreePrimeUTR,
 )
 from biofiles.types.feature import (
     Feature,
@@ -196,13 +198,13 @@ class UTR(BaseUTR, type="utr"):
     gene: Gene = utr_gene
 
 
-class FivePrimeUTR(UTR, type="five_prime_utr"):
+class FivePrimeUTR(BaseFivePrimeUTR, type="five_prime_utr"):
     id: NoneType = no_id_field()
     transcript: Transcript = five_prime_utr_transcript
     gene: Gene = five_prime_utr_gene
 
 
-class ThreePrimeUTR(UTR, type="three_prime_utr"):
+class ThreePrimeUTR(BaseThreePrimeUTR, type="three_prime_utr"):
     id: NoneType = no_id_field()
     transcript: Transcript = three_prime_utr_transcript
     gene: Gene = three_prime_utr_gene

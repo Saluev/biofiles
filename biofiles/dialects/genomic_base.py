@@ -27,3 +27,11 @@ class CDS(Feature):
 
 class UTR(Feature):
     transcript: Transcript
+
+
+class FivePrimeUTR(UTR):
+    pass
+
+
+class ThreePrimeUTR(UTR):
+    pass
