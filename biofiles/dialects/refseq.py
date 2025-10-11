@@ -1,8 +1,13 @@
 """Feature dialect for RefSeq .gtf/.gff3 files."""
 
 from enum import StrEnum
-from types import NoneType
 
+from biofiles.dialects.genomic_base import (
+    Gene as BaseGene,
+    Transcript as BaseTranscript,
+    Exon as BaseExon,
+    CDS as BaseCDS,
+)
 from biofiles.types.feature_v2 import Feature, id_field, field, relation, no_id_field
 
 
@@ -76,7 +81,7 @@ stop_codon_transcript, transcript_stop_codon = relation(
 stop_codon_exon, _ = relation(source=("transcript_id", "exon_number"), one_to_one=True)
 
 
-class Gene(Feature, type="gene"):
+class Gene(BaseGene, type="gene"):
     id: str = id_field(source="gene_id")
     type: GeneType = field(source="gene_biotype")
     name: str = field(source="gene")
@@ -84,7 +89,7 @@ class Gene(Feature, type="gene"):
     transcripts: list["Transcript"] = gene_transcripts
 
 
-class Transcript(Feature, type="transcript"):
+class Transcript(BaseTranscript, type="transcript"):
     id: str = id_field(source="transcript_id")
     type: TranscriptType = field(source="transcript_biotype")
     product: str | None = field(source="product", default=None)
@@ -94,7 +99,7 @@ class Transcript(Feature, type="transcript"):
     stop_codon: "StopCodon | None" = transcript_stop_codon
 
 
-class Exon(Feature, type="exon"):
+class Exon(BaseExon, type="exon"):
     id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     number: int = field(source="exon_number")
     transcript: Transcript = exon_transcript
@@ -102,7 +107,7 @@ class Exon(Feature, type="exon"):
     cdss: list["CDS"] = exon_cds
 
 
-class CDS(Feature, type="cds"):
+class CDS(BaseCDS, type="cds"):
     id: tuple[str, int] = no_id_field()
     exon: Exon = cds_exon
 

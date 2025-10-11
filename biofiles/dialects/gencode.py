@@ -3,6 +3,12 @@
 from enum import StrEnum
 from types import NoneType
 
+from biofiles.dialects.genomic_base import (
+    Gene as BaseGene,
+    Transcript as BaseTranscript,
+    Exon as BaseExon,
+    CDS as BaseCDS,
+)
 from biofiles.types.feature_v2 import Feature, id_field, field, relation, no_id_field
 
 
@@ -128,7 +134,7 @@ stop_codon_transcript, transcript_stop_codon = relation(
 stop_codon_exon, _ = relation(source=("transcript_id", "exon_number"), one_to_one=True)
 
 
-class Gene(Feature, type="gene"):
+class Gene(BaseGene, type="gene"):
     id: str = id_field(source="gene_id")
     type: GeneType = field(source="gene_type")
     name: str = field(source="gene_name")
@@ -136,7 +142,7 @@ class Gene(Feature, type="gene"):
     tags: list[str] = field(source="tag", default_factory=list)
 
 
-class Transcript(Feature, type="transcript"):
+class Transcript(BaseTranscript, type="transcript"):
     id: str = id_field(source="transcript_id")
     type: TranscriptType = field(source="transcript_type")
     name: str = field(source="transcript_name")
@@ -156,7 +162,7 @@ class Selenocysteine(
     transcript: Transcript = selenocysteine_transcript
 
 
-class Exon(Feature, type="exon"):
+class Exon(BaseExon, type="exon"):
     id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     number: int = field(source="exon_number")
     transcript: Transcript = exon_transcript
@@ -164,8 +170,14 @@ class Exon(Feature, type="exon"):
     cds: "CDS | None" = exon_cds
     tags: list[str] = field(source="tag", default_factory=list)
 
+    @property
+    def cdss(self) -> list["CDS"]:
+        # In RefSeq, exon can have multiple CDS.
+        # This property is for compatibility with a more general case.
+        return [self.cds] if self.cds is not None else []
 
-class CDS(Feature, type="cds"):
+
+class CDS(BaseCDS, type="cds"):
     id: tuple[str, int] = id_field(source=("transcript_id", "exon_number"))
     exon: Exon = cds_exon
 
