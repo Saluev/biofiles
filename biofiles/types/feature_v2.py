@@ -210,12 +210,16 @@ class FeatureMetaclass(type):
                         raise NotImplementedError()
                     globals["get_composite_field"] = get_composite_field
                     getter = f"get_composite_field(attributes, {repr(attribute_name)})"
-                if issubclass(field_annotation, (int, float)):
+                if isinstance(field_annotation, type) and issubclass(
+                    field_annotation, (int, float)
+                ):
                     getter = f"{field_annotation.__name__}({getter})"
-                elif issubclass(field_annotation, Enum):
+                elif isinstance(field_annotation, type) and issubclass(
+                    field_annotation, Enum
+                ):
                     globals[field_annotation.__name__] = field_annotation
                     getter = f"{field_annotation.__name__}({getter})"
-                # TODO list[Enum], etc.
+                # TODO int | None, list[Enum], etc.
                 # TODO ensure it's a list if annotated as list
                 assignment = f"self.{field_name} = {getter}"
                 # TODO necessary conversions, proper exceptions
