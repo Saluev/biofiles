@@ -297,3 +297,9 @@ def relation(source: Source, *, one_to_one: bool = False) -> tuple[Field, Field]
     forward_field = dataclass_field(metadata={"relation": forward_relation})
     inverse_field = dataclass_field(metadata={"relation": inverse_relation})
     return forward_field, inverse_field
+
+
+@dataclass(frozen=True)
+class Dialect:
+    name: str
+    feature_types: list[Type[Feature]]

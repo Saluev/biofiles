@@ -1,6 +1,6 @@
 """Feature dialect for StringTie .gtf/.gff output."""
 
-from biofiles.types.feature_v2 import Feature, relation, id_field, field
+from biofiles.types.feature_v2 import Feature, relation, id_field, field, Dialect
 
 exon_transcript, transcript_exons = relation(source="transcript_id")
 
@@ -21,3 +21,4 @@ class Exon(Feature, type="exon"):
 
 
 STRINGTIE_FEATURE_TYPES = [Transcript, Exon]
+STRINGTIE_DIALECT = Dialect(name="StringTie", feature_types=STRINGTIE_FEATURE_TYPES)

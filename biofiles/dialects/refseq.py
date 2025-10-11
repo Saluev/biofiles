@@ -8,7 +8,14 @@ from biofiles.dialects.genomic_base import (
     Exon as BaseExon,
     CDS as BaseCDS,
 )
-from biofiles.types.feature_v2 import Feature, id_field, field, relation, no_id_field
+from biofiles.types.feature_v2 import (
+    Feature,
+    id_field,
+    field,
+    relation,
+    no_id_field,
+    Dialect,
+)
 
 
 class GeneType(StrEnum):
@@ -132,3 +139,4 @@ REFSEQ_FEATURE_TYPES = [
     StartCodon,
     StopCodon,
 ]
+REFSEQ_DIALECT = Dialect(name="RefSeq", feature_types=REFSEQ_FEATURE_TYPES)

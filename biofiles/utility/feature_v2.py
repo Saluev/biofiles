@@ -10,6 +10,7 @@ from biofiles.types.feature_v2 import (
     Relation,
     Source,
     get_composite_field,
+    Dialect,
 )
 
 
@@ -94,11 +95,9 @@ class RawFeatureReader(Reader):
 
 class FeatureReader(Reader):
 
-    def __init__(
-        self, input_: TextIO | Path | str, feature_types: list[FeatureMetaclass]
-    ) -> None:
+    def __init__(self, input_: TextIO | Path | str, dialect: Dialect) -> None:
         super().__init__(input_)
-        self._feature_types = FeatureTypes(feature_types)
+        self._feature_types = FeatureTypes(dialect.feature_types)
         self._raw_reader = self._make_raw_feature_reader()
 
     def _make_raw_feature_reader(self) -> RawFeatureReader:

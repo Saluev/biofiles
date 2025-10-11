@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Iterator, cast, TextIO
 
 from biofiles.common import Strand, Writer
+from biofiles.dialects.detector import detect_dialect
 from biofiles.dialects.genomic_base import Feature, Gene, Exon, UTR
-from biofiles.dialects.gencode import GENCODE_FEATURE_TYPES
 from biofiles.utility.cli import parse_pipeline_args
 from biofiles.utility.feature_v2 import (
     FeatureReader,
@@ -151,7 +151,8 @@ if __name__ == "__main__":
         pipeline.mapper = lambda f: print(old_mapper(f))
 
     for path in pipeline.inputs:
-        with GFFReader(path, feature_types=GENCODE_FEATURE_TYPES) as r:
+        dialect = detect_dialect(path)
+        with GFFReader(path, dialect=dialect) as r:
             total_features = 0
             annotated_genes = 0
             annotated_exons = 0

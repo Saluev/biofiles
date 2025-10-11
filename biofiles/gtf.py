@@ -1,11 +1,12 @@
 __all__ = ["GTFReader", "GTFWriter"]
 
 import sys
+from pathlib import Path
 from typing import Iterator
 
 from biofiles.common import Writer
+from biofiles.dialects.detector import detect_dialect
 from biofiles.dialects.genomic_base import Gene, Exon, Feature, CDS, UTR
-from biofiles.dialects.refseq import REFSEQ_FEATURE_TYPES
 from biofiles.gff import RawGFFReader
 from biofiles.utility.feature_v2 import FeatureReader, RawFeatureReader, FeatureDraft
 
@@ -63,7 +64,8 @@ class GTFWriter(Writer):
 
 if __name__ == "__main__":
     for path in sys.argv[1:]:
-        with GTFReader(path, feature_types=REFSEQ_FEATURE_TYPES) as r:
+        dialect = detect_dialect(Path(path))
+        with GTFReader(path, dialect=dialect) as r:
             total_features = 0
             annotated_genes = 0
             annotated_exons = 0

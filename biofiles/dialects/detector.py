@@ -1,0 +1,65 @@
+import sys
+from itertools import islice
+from pathlib import Path
+
+from biofiles.dialects.gencode import GENCODE_DIALECT
+from biofiles.dialects.refseq import REFSEQ_DIALECT
+from biofiles.types.feature_v2 import Dialect
+from biofiles.utility.feature_v2 import RawFeatureReader
+
+
+class CantDetectDialect(Exception):
+    pass
+
+
+class DialectDetector:
+    def __init__(self, raw_reader: RawFeatureReader) -> None:
+        self._raw_reader = raw_reader
+
+    def detect(self) -> Dialect:
+        gencode_rows = 0
+        refseq_rows = 0
+        total_rows = 0
+        for fd in islice(self._raw_reader, 1000):
+            total_rows += 1
+            if fd.source.lower() in ("havana", "ensembl"):
+                gencode_rows += 1
+            if fd.source.lower() in ("bestrefseq", "gnomon"):
+                refseq_rows += 1
+
+        if gencode_rows / total_rows > 0.9:
+            return GENCODE_DIALECT
+        if refseq_rows / total_rows > 0.9:
+            return REFSEQ_DIALECT
+
+        raise CantDetectDialect(
+            f"of {total_rows} read rows {gencode_rows} look like GENCODE, {refseq_rows} look like RefSeq"
+        )
+
+
+def detect_dialect(path: Path) -> Dialect:
+    if path.suffix == ".gtf":
+        from biofiles.gtf import RawGTFReader
+
+        raw_reader = RawGTFReader(path)
+    elif path.suffix in (".gff", ".gff3"):
+        from biofiles.gff import RawGFFReader
+
+        raw_reader = RawGFFReader(path)
+    else:
+        raise CantDetectDialect(f"unknown file extension {path.suffix}")
+    detector = DialectDetector(raw_reader=raw_reader)
+    return detector.detect()
+
+
+if __name__ == "__main__":
+    exit_code = 0
+    for path_str in sys.argv[1:]:
+        path = Path(path_str)
+        try:
+            dialect = detect_dialect(path)
+            print(f"{path}\t{dialect.name}")
+        except CantDetectDialect as exc:
+            print(f"Failed to detect dialect for {path}: {exc}", file=sys.stderr)
+            exit_code = 1
+    sys.exit(exit_code)
