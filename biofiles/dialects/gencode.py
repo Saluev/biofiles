@@ -107,7 +107,7 @@ selenocysteine_gene, _ = relation(source="gene_id")
 selenocysteine_transcript, _ = relation(source="transcript_id")
 exon_transcript, transcript_exons = relation(source="transcript_id")
 exon_gene, _ = relation(source="gene_id")
-cds_exon, exon_cds = relation(source="exon_id", one_to_one=True)
+cds_exon, exon_cds = relation(source=("transcript_id", "exon_number"), one_to_one=True)
 utr_transcript, transcript_utrs = relation(source="transcript_id")
 utr_gene, _ = relation(source="gene_id")
 five_prime_utr_transcript, transcript_five_prime_utr = relation(
@@ -121,11 +121,11 @@ three_prime_utr_gene, _ = relation(source="gene_id")
 start_codon_transcript, transcript_start_codon = relation(
     source="transcript_id", one_to_one=True
 )
-start_codon_exon, _ = relation(source="exon_id", one_to_one=True)
+start_codon_exon, _ = relation(source=("transcript_id", "exon_number"), one_to_one=True)
 stop_codon_transcript, transcript_stop_codon = relation(
     source="transcript_id", one_to_one=True
 )
-stop_codon_exon, _ = relation(source="exon_id", one_to_one=True)
+stop_codon_exon, _ = relation(source=("transcript_id", "exon_number"), one_to_one=True)
 
 
 class Gene(Feature, type="gene"):
