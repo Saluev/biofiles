@@ -3,14 +3,14 @@ from io import StringIO
 
 import pytest
 
-from biofiles.dialects.gencode import GENCODE_FEATURE_TYPES
-from biofiles.gff import GFFReader, GFF3Writer
+from biofiles.dialects.gencode import GENCODE_DIALECT
 from biofiles.dialects.genomic_base import Gene, Transcript, Exon, Feature
+from biofiles.gff import GFFReader, GFF3Writer
 
 
 def test_parse_gencode_annotation() -> None:
     path = pathlib.Path(__file__).parent / "files" / "gencode_49_annotation.gff"
-    with GFFReader(path, GENCODE_FEATURE_TYPES) as r:
+    with GFFReader(path, GENCODE_DIALECT) as r:
         features = [*r]
     assert sum(1 for f in features if isinstance(f, Gene)) == 1
     assert sum(1 for f in features if isinstance(f, Transcript)) == 1
