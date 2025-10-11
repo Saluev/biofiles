@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TypeAlias, Callable, Any, Literal, Type
 
-from biofiles.types.feature import Feature, Gene, Transcript, UTR, Exon
+from biofiles.types.feature import Feature
+from biofiles.dialects.genomic_base import Gene, Transcript, UTR, Exon
 
 FeatureFilter: TypeAlias = Callable[[Feature], bool]
 FeatureMapper: TypeAlias = Callable[[Feature], Any]
