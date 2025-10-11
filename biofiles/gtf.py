@@ -4,14 +4,14 @@ import sys
 from typing import Iterator
 
 from biofiles.common import Writer
-from biofiles.dialects.gencode import GENCODE_FEATURE_TYPES
+from biofiles.dialects.genomic_base import Gene, Exon, Feature, CDS, UTR
 from biofiles.dialects.refseq import REFSEQ_FEATURE_TYPES
-from biofiles.gff import GFFReader
-from biofiles.dialects.gencode import Gene, Exon, Feature, UTR, CDS
+from biofiles.gff import RawGFFReader
+from biofiles.utility.feature_v2 import FeatureReader, RawFeatureReader, FeatureDraft
 
 
-class GTFReader(GFFReader):
-    def __iter__(self) -> Iterator[Feature]:
+class RawGTFReader(RawGFFReader):
+    def __iter__(self) -> Iterator[FeatureDraft]:
         yield from self._read_gff3()
 
     def _parse_attributes(
@@ -33,6 +33,12 @@ class GTFReader(GFFReader):
             raise ValueError(
                 f"failed to parse attribute string {attributes_str!r}: {exc}"
             ) from exc
+
+
+class GTFReader(FeatureReader):
+
+    def _make_raw_feature_reader(self) -> RawFeatureReader:
+        return RawGTFReader(self._input)
 
 
 class GTFWriter(Writer):

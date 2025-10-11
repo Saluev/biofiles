@@ -8,6 +8,7 @@ from biofiles.dialects.genomic_base import (
     Transcript as BaseTranscript,
     Exon as BaseExon,
     CDS as BaseCDS,
+    UTR as BaseUTR,
 )
 from biofiles.types.feature_v2 import Feature, id_field, field, relation, no_id_field
 
@@ -182,7 +183,7 @@ class CDS(BaseCDS, type="cds"):
     exon: Exon = cds_exon
 
 
-class UTR(Feature, type="utr"):
+class UTR(BaseUTR, type="utr"):
     id: NoneType = no_id_field()
     transcript: Transcript = utr_transcript
     gene: Gene = utr_gene

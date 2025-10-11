@@ -3,16 +3,20 @@ from pathlib import Path
 from typing import Iterator, cast, TextIO
 
 from biofiles.common import Strand, Writer
+from biofiles.dialects.genomic_base import Feature, Gene, Exon, UTR
 from biofiles.dialects.gencode import GENCODE_FEATURE_TYPES
 from biofiles.utility.cli import parse_pipeline_args
-from biofiles.utility.feature_v2 import FeatureReader, FeatureDraft, FeatureDrafts
-from biofiles.dialects.gencode import Feature, Gene, Exon, UTR
+from biofiles.utility.feature_v2 import (
+    FeatureReader,
+    FeatureDraft,
+    RawFeatureReader,
+)
 
-__all__ = ["GFFReader", "GFF3Writer"]
+__all__ = ["RawGFFReader", "GFFReader", "GFF3Writer"]
 
 
-class GFFReader(FeatureReader):
-    def __iter__(self) -> Iterator[Feature]:
+class RawGFFReader(RawFeatureReader):
+    def __iter__(self) -> Iterator[FeatureDraft]:
         for line in self._input:
             line = line.rstrip("\n")
             if line.startswith(_VERSION_PREFIX):
@@ -25,8 +29,7 @@ class GFFReader(FeatureReader):
                 continue
             raise ValueError(f"unexpected line {line!r}, expected version")
 
-    def _read_gff3(self) -> Iterator[Feature]:
-        drafts = FeatureDrafts(self._feature_types)
+    def _read_gff3(self) -> Iterator[FeatureDraft]:
         idx = 0
         for i, line in enumerate(self._input):
             if line.startswith("#"):
@@ -55,7 +58,7 @@ class GFFReader(FeatureReader):
                 raise ValueError(f"failed to parse line {i}: {exc}") from exc
 
             parent_id = attributes.get("Parent", None)
-            draft = FeatureDraft(
+            yield FeatureDraft(
                 idx=idx,
                 sequence_id=sequence_id,
                 source=source,
@@ -69,10 +72,7 @@ class GFFReader(FeatureReader):
                 phase=phase,
                 attributes=attributes,
             )
-            drafts.add(draft)
             idx += 1
-
-        yield from self._finalize_drafts(drafts)
 
     def _parse_score(self, line: str, score_str: str) -> float | None:
         if score_str == ".":
@@ -109,6 +109,12 @@ class GFFReader(FeatureReader):
             for part in attributes_str.strip(";").split(";")
             for k, v in (part.split("=", 1),)
         }
+
+
+class GFFReader(FeatureReader):
+
+    def _make_raw_feature_reader(self) -> RawFeatureReader:
+        return RawGFFReader(self._input)
 
 
 class GFF3Writer(Writer):
