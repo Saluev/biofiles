@@ -51,9 +51,6 @@ def test_write_gff3() -> None:
             strand="+",
             phase=None,
             attributes={"biotype": "protein_coding", "foo": "bar"},
-            id=None,
-            parent=None,
-            children=(),
         )
     )
     assert (
