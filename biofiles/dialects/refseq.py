@@ -8,7 +8,7 @@ from biofiles.dialects.genomic_base import (
     Exon as BaseExon,
     CDS as BaseCDS,
 )
-from biofiles.types.feature_v2 import (
+from biofiles.types.feature import (
     Feature,
     id_field,
     field,

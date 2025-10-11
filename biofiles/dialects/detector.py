@@ -4,8 +4,8 @@ from pathlib import Path
 
 from biofiles.dialects.gencode import GENCODE_DIALECT
 from biofiles.dialects.refseq import REFSEQ_DIALECT
-from biofiles.types.feature_v2 import Dialect
-from biofiles.utility.feature_v2 import RawFeatureReader
+from biofiles.types.feature import Dialect
+from biofiles.utility.feature import RawFeatureReader
 
 
 class CantDetectDialect(Exception):

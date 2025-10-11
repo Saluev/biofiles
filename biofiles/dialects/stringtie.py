@@ -1,6 +1,6 @@
 """Feature dialect for StringTie .gtf/.gff output."""
 
-from biofiles.types.feature_v2 import Feature, relation, id_field, field, Dialect
+from biofiles.types.feature import Feature, relation, id_field, field, Dialect
 
 exon_transcript, transcript_exons = relation(source="transcript_id")
 
