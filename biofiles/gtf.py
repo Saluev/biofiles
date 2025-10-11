@@ -13,13 +13,21 @@ class GTFReader(GFFReader):
     def __iter__(self) -> Iterator[Feature]:
         yield from self._read_gff3()
 
-    def _parse_attributes(self, line: str, attributes_str: str) -> dict[str, str]:
+    def _parse_attributes(
+        self, line: str, attributes_str: str
+    ) -> dict[str, str | list[str]]:
         try:
-            return {
-                k: v.removeprefix('"').removesuffix('"').replace(r"\"", '"')
-                for part in attributes_str.strip().strip(";").split(";")
-                for k, v in (part.strip().split(None, 1),)
-            }
+            result: dict[str, str | list[str]] = {}
+            for part in attributes_str.strip().strip(";").split(";"):
+                k, v = part.strip().split(None, 1)
+                v = v.removeprefix('"').removesuffix('"').replace(r"\"", '"')
+                if k in result:
+                    if not isinstance(result[k], list):
+                        result[k] = [result[k]]
+                    result[k].append(v)
+                else:
+                    result[k] = v
+            return result
         except ValueError as exc:
             raise ValueError(
                 f"failed to parse attribute string {attributes_str!r}: {exc}"

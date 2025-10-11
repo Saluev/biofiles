@@ -133,6 +133,7 @@ class Gene(Feature, type="gene"):
     type: GeneType = field(source="gene_type")
     name: str = field(source="gene_name")
     transcripts: list["Transcript"] = gene_transcripts
+    tags: list[str] = field(source="tag", default_factory=list)
 
 
 class Transcript(Feature, type="transcript"):
@@ -144,6 +145,7 @@ class Transcript(Feature, type="transcript"):
     utrs: list["UTR"] = transcript_utrs
     start_codon: "StartCodon | None" = transcript_start_codon
     stop_codon: "StopCodon | None" = transcript_stop_codon
+    tags: list[str] = field(source="tag", default_factory=list)
 
 
 class Selenocysteine(
@@ -160,6 +162,7 @@ class Exon(Feature, type="exon"):
     transcript: Transcript = exon_transcript
     gene: Gene = exon_gene
     cds: "CDS | None" = exon_cds
+    tags: list[str] = field(source="tag", default_factory=list)
 
 
 class CDS(Feature, type="cds"):

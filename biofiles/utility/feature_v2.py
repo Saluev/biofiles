@@ -26,7 +26,7 @@ class FeatureDraft:
     score: float | None
     strand: Strand | None
     phase: int | None
-    attributes: dict[str, str]
+    attributes: dict[str, str | list[str]]
 
     class_: Type[Feature] | None = None
     id: Any = None
