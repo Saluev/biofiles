@@ -19,6 +19,7 @@ class Relation:
 
     class_: type | None = None
     """ Python class for the related feature. """
+    attribute_name: str | None = None
 
 
 @dataclass
@@ -26,6 +27,7 @@ class InverseRelation:
     inverse: Relation
     one_to_one: bool
     class_: type | None = None
+    attribute_name: str | None = None
 
 
 def get_composite_field(
@@ -51,6 +53,9 @@ class FeatureMetaclass(type):
 
     __filter_ends__: Relation | None
     """ Filter by end position — feature ends at the same point as related feature. """
+
+    __relations__: list[Relation]
+    """ All direct relations for this type, for faster parsing. """
 
     def __new__(
         cls,
@@ -87,15 +92,19 @@ class FeatureMetaclass(type):
         return result
 
     def _fill_relation_classes(cls, namespace) -> None:
+        cls.__relations__ = []
         for key, value in namespace.items():
             match value:
                 case Field(metadata={"relation": Relation() as r}):
                     r.class_ = cls
+                    r.attribute_name = key
                     if key in cls.__annotations__:
                         # TODO handle optionality and forward refs
                         r.inverse.class_ = cls.__annotations__[key]
+                    cls.__relations__.append(r)
                 case Field(metadata={"relation": InverseRelation() as r}):
                     r.class_ = cls
+                    r.attribute_name = key
                     # TODO calculating r.inverse.class_ based on type annotation
 
     def _fill_filters(
@@ -168,9 +177,12 @@ class FeatureMetaclass(type):
         argument: str | None
         assignment: str
         match field_value:
-            case Field(metadata={"relation": _}):
+            case Field(metadata={"relation": r}):
                 argument = f"{field_name}: {cls._format_type_arg(field_annotation, optional=True)} = None"
-                assignment = f"self.{field_name} = {field_name}"
+                if isinstance(r, InverseRelation) and not r.one_to_one:
+                    assignment = f"self.{field_name} = {field_name} if {field_name} is not None else []"
+                else:
+                    assignment = f"self.{field_name} = {field_name}"
             case Field(metadata={"id_attribute_name": None}):
                 argument = None
                 assignment = f"self.{field_name} = None"

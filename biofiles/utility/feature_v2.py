@@ -1,7 +1,7 @@
 from collections import deque, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterator, TextIO
+from typing import Any, Iterator, TextIO, Type
 
 from biofiles.common import Strand, Reader
 from biofiles.types.feature_v2 import (
@@ -28,7 +28,7 @@ class FeatureDraft:
     phase: int | None
     attributes: dict[str, str]
 
-    class_: type | None = None
+    class_: Type[Feature] | None = None
     id: Any = None
     finalized: Feature | None = None
 
@@ -141,7 +141,31 @@ class FeatureReader(Reader):
             )
 
     def _fill_relations(self, fds: FeatureDrafts) -> None:
-        pass  # TODO
+        for fd in fds.drafts:
+            for relation in fd.class_.__relations__:
+                related_id = get_composite_field(
+                    fd.attributes, relation.id_attribute_source
+                )
+                related_class = relation.inverse.class_
+                try:
+                    related_fd = fds.by_class_and_id[related_class, related_id]
+                except KeyError as exc:
+                    raise ValueError(
+                        f"can't find related {related_class.__name__} {related_id} for {fd.finalized}"
+                    ) from exc
+                setattr(fd.finalized, relation.attribute_name, related_fd.finalized)
+                if relation.inverse.attribute_name is None:
+                    pass
+                elif relation.inverse.one_to_one:
+                    setattr(
+                        related_fd.finalized,
+                        relation.inverse.attribute_name,
+                        fd.finalized,
+                    )
+                else:
+                    getattr(
+                        related_fd.finalized, relation.inverse.attribute_name
+                    ).append(fd.finalized)
 
     def _check_filters(
         self, fds: FeatureDrafts, fd: FeatureDraft, ft: FeatureMetaclass
