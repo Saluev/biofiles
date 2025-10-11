@@ -90,7 +90,7 @@ stop_codon_exon, _ = relation(source=("transcript_id", "exon_number"), one_to_on
 
 class Gene(BaseGene, type="gene"):
     id: str = id_field(source="gene_id")
-    type: GeneType = field(source="gene_biotype")
+    biotype: GeneType = field(source="gene_biotype")
     name: str = field(source="gene")
     synonyms: list[str] = field(source="gene_synonym", default_factory=list)
     transcripts: list["Transcript"] = gene_transcripts
@@ -98,7 +98,7 @@ class Gene(BaseGene, type="gene"):
 
 class Transcript(BaseTranscript, type="transcript"):
     id: str = id_field(source="transcript_id")
-    type: TranscriptType = field(source="transcript_biotype")
+    biotype: TranscriptType = field(source="transcript_biotype")
     product: str | None = field(source="product", default=None)
     gene: Gene = transcript_gene
     exons: list["Exon"] = transcript_exons

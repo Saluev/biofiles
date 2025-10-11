@@ -2,12 +2,12 @@ from biofiles.types.feature import Feature
 
 
 class Gene(Feature):
-    type: str
+    biotype: str
     transcripts: list["Transcript"]
 
 
 class Transcript(Feature):
-    type: str
+    biotype: str
     gene: Gene
     exons: list["Exon"]
 
