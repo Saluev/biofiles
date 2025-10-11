@@ -101,9 +101,11 @@ class GFFReader(FeatureReader):
                 f"unexpected line {line!r}, phase should be an integer or '.'"
             ) from exc
 
-    def _parse_attributes(self, line: str, attributes_str: str) -> dict[str, str]:
+    def _parse_attributes(
+        self, line: str, attributes_str: str
+    ) -> dict[str, str | list[str]]:
         return {
-            k: v
+            k: v.split(",") if "," in v else v
             for part in attributes_str.strip(";").split(";")
             for k, v in (part.split("=", 1),)
         }

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, Field, field as dataclass_field
 from enum import Enum
 from typing import dataclass_transform, Type, Any, TypeAlias
+from uuid import uuid4
 
 from biofiles.common import Strand
 
@@ -189,10 +190,24 @@ class FeatureMetaclass(type):
             case Field(metadata={"attribute_name": attribute_name}) | Field(
                 metadata={"id_attribute_name": attribute_name}
             ):
+                default = field_value.metadata.get("attribute_default", _no_default)
+                default_factory = field_value.metadata.get(
+                    "attribute_default_factory", _no_default
+                )
+                default_variable_name = f"default_{uuid4().hex}"
                 argument = None
                 if isinstance(attribute_name, str):
-                    getter = f"attributes[{repr(attribute_name)}]"
+                    if default is not _no_default:
+                        globals[default_variable_name] = default
+                        getter = f"attributes.get({repr(attribute_name)}, {default_variable_name})"
+                    elif default_factory is not _no_default:
+                        globals[default_variable_name] = default_factory
+                        getter = f"attributes.get({repr(attribute_name)}, {default_variable_name}())"
+                    else:
+                        getter = f"attributes[{repr(attribute_name)}]"
                 else:
+                    if default is not _no_default or default_factory is not _no_default:
+                        raise NotImplementedError()
                     globals["get_composite_field"] = get_composite_field
                     getter = f"get_composite_field(attributes, {repr(attribute_name)})"
                 if issubclass(field_annotation, (int, float)):
@@ -200,6 +215,8 @@ class FeatureMetaclass(type):
                 elif issubclass(field_annotation, Enum):
                     globals[field_annotation.__name__] = field_annotation
                     getter = f"{field_annotation.__name__}({getter})"
+                # TODO list[Enum], etc.
+                # TODO ensure it's a list if annotated as list
                 assignment = f"self.{field_name} = {getter}"
                 # TODO necessary conversions, proper exceptions
             case None:
@@ -251,8 +268,18 @@ def no_id_field() -> Field:
     return dataclass_field(metadata={"id_attribute_name": None})
 
 
-def field(source: Source) -> Field:
-    return dataclass_field(metadata={"attribute_name": source})
+_no_default = object()
+
+
+def field(
+    source: Source, *, default: Any = _no_default, default_factory: Any = _no_default
+) -> Field:
+    metadata = {"attribute_name": source}
+    if default is not _no_default:
+        metadata["attribute_default"] = default
+    if default_factory is not _no_default:
+        metadata["attribute_default_factory"] = default_factory
+    return dataclass_field(metadata=metadata)
 
 
 def relation(source: Source, *, one_to_one: bool = False) -> tuple[Field, Field]:
