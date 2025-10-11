@@ -13,14 +13,15 @@ class CantDetectDialect(Exception):
 
 
 class DialectDetector:
-    def __init__(self, raw_reader: RawFeatureReader) -> None:
+    def __init__(self, raw_reader: RawFeatureReader, num_samples: int = 1000) -> None:
         self._raw_reader = raw_reader
+        self._num_samples = num_samples
 
     def detect(self) -> Dialect:
         gencode_rows = 0
         refseq_rows = 0
         total_rows = 0
-        for fd in islice(self._raw_reader, 1000):
+        for fd in islice(self._raw_reader, self._num_samples):
             total_rows += 1
             if fd.source.lower() in ("havana", "ensembl"):
                 gencode_rows += 1
