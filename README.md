@@ -44,13 +44,19 @@ Reading GFF genome annotations:
 
 ```python
 from biofiles.gff import GFFReader
-from biofiles.types.feature import Gene
+from biofiles.dialects.gencode import GENCODE_DIALECT
+from biofiles.dialects.genomic_base import Gene
 
-with GFFReader("GCF_009914755.1_T2T-CHM13v2.0_genomic.gff") as r:
+with GFFReader("GCF_009914755.1_T2T-CHM13v2.0_genomic.gff", dialect=GENCODE_DIALECT) as r:
     for feature in r:
         if isinstance(feature, Gene):
             print(feature.name, len(feature.exons))
 ```
+
+Currently three dialects are supported:
+* `biofiles.dialects.gencode.GENCODE_DIALECT` for GENCODE genome annotation;
+* `biofiles.dialects.refseq.REFSEQ_DIALECT` for RefSeq genome annotation;
+* `biofiles.dialects.stringtie.STRINGTIE_DIALECT` for StringTie output files.
 
 ## License 
 

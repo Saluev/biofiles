@@ -4,6 +4,7 @@ from pathlib import Path
 
 from biofiles.dialects.gencode import GENCODE_DIALECT
 from biofiles.dialects.refseq import REFSEQ_DIALECT
+from biofiles.dialects.stringtie import STRINGTIE_DIALECT
 from biofiles.types.feature import Dialect
 from biofiles.utility.feature import RawFeatureReader
 
@@ -20,6 +21,7 @@ class DialectDetector:
     def detect(self) -> Dialect:
         gencode_rows = 0
         refseq_rows = 0
+        stringtie_rows = 0
         total_rows = 0
         for fd in islice(self._raw_reader, self._num_samples):
             total_rows += 1
@@ -28,14 +30,19 @@ class DialectDetector:
                 gencode_rows += 1
             elif source in ("bestrefseq", "bestrefseq%2cgnomon", "gnomon", "refseq"):
                 refseq_rows += 1
+            elif source in ("stringtie",):
+                stringtie_rows += 1
 
         if gencode_rows > 0 and gencode_rows >= 0.9 * total_rows:
             return GENCODE_DIALECT
         if refseq_rows > 0 and refseq_rows >= 0.9 * total_rows:
             return REFSEQ_DIALECT
+        if stringtie_rows > 0 and stringtie_rows >= 0.9 * total_rows:
+            return STRINGTIE_DIALECT
 
         raise CantDetectDialect(
-            f"of {total_rows} read rows {gencode_rows} look like GENCODE, {refseq_rows} look like RefSeq"
+            f"of {total_rows} read rows {gencode_rows} look like GENCODE, "
+            f"{refseq_rows} look like RefSeq, {stringtie_rows} look like StringTie"
         )
 
 
