@@ -24,7 +24,12 @@ class DialectDetector:
             total_rows += 1
             if fd.source.lower() in ("havana", "ensembl"):
                 gencode_rows += 1
-            if fd.source.lower() in ("bestrefseq", "gnomon"):
+            if fd.source.lower() in (
+                "bestrefseq",
+                "bestrefseq%2cgnomon",
+                "gnomon",
+                "refseq",
+            ):
                 refseq_rows += 1
 
         if gencode_rows > 0 and gencode_rows >= 0.9 * total_rows:
