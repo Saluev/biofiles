@@ -28,28 +28,31 @@ class GFFReader(FeatureReader):
     def _read_gff3(self) -> Iterator[Feature]:
         drafts = FeatureDrafts(self._feature_types)
         idx = 0
-        for line in self._input:
+        for i, line in enumerate(self._input):
             if line.startswith("#"):
                 continue
-            line = line.rstrip("\n")
-            parts = line.split("\t", maxsplit=8)
-            if len(parts) != 9:
-                raise ValueError(f"unexpected line {line!r}, expected 9 columns")
-            (
-                sequence_id,
-                source,
-                type_,
-                start_str,
-                end_str,
-                score_str,
-                strand_str,
-                phase_str,
-                attributes_str,
-            ) = parts
-            score = self._parse_score(line, score_str)
-            strand = self._parse_strand(line, strand_str)
-            phase = self._parse_phase(line, phase_str)
-            attributes = self._parse_attributes(line, attributes_str)
+            try:
+                line = line.rstrip("\n")
+                parts = line.split("\t", maxsplit=8)
+                if len(parts) != 9:
+                    raise ValueError(f"unexpected line {line!r}, expected 9 columns")
+                (
+                    sequence_id,
+                    source,
+                    type_,
+                    start_str,
+                    end_str,
+                    score_str,
+                    strand_str,
+                    phase_str,
+                    attributes_str,
+                ) = parts
+                score = self._parse_score(line, score_str)
+                strand = self._parse_strand(line, strand_str)
+                phase = self._parse_phase(line, phase_str)
+                attributes = self._parse_attributes(line, attributes_str)
+            except Exception as exc:
+                raise ValueError(f"failed to parse line {i}: {exc}") from exc
 
             parent_id = attributes.get("Parent", None)
             draft = FeatureDraft(
