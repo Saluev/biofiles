@@ -14,11 +14,16 @@ class GTFReader(GFFReader):
         yield from self._read_gff3()
 
     def _parse_attributes(self, line: str, attributes_str: str) -> dict[str, str]:
-        return {
-            k: v.removeprefix('"').removesuffix('"').replace(r"\"", '"')
-            for part in attributes_str.strip(";").split(";")
-            for k, v in (part.strip().split(None, 1),)
-        }
+        try:
+            return {
+                k: v.removeprefix('"').removesuffix('"').replace(r"\"", '"')
+                for part in attributes_str.strip().strip(";").split(";")
+                for k, v in (part.strip().split(None, 1),)
+            }
+        except ValueError as exc:
+            raise ValueError(
+                f"failed to parse attribute string {attributes_str!r}: {exc}"
+            ) from exc
 
 
 class GTFWriter(Writer):
