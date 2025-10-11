@@ -3,6 +3,7 @@ from biofiles.types.feature import Feature
 
 class Gene(Feature):
     biotype: str
+    name: str
     transcripts: list["Transcript"]
 
 
