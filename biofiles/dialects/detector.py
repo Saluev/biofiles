@@ -23,14 +23,10 @@ class DialectDetector:
         total_rows = 0
         for fd in islice(self._raw_reader, self._num_samples):
             total_rows += 1
-            if fd.source.lower() in ("havana", "ensembl"):
+            source = fd.source.lower()
+            if source in ("havana", "ensembl"):
                 gencode_rows += 1
-            if fd.source.lower() in (
-                "bestrefseq",
-                "bestrefseq%2cgnomon",
-                "gnomon",
-                "refseq",
-            ):
+            elif source in ("bestrefseq", "bestrefseq%2cgnomon", "gnomon", "refseq"):
                 refseq_rows += 1
 
         if gencode_rows > 0 and gencode_rows >= 0.9 * total_rows:
