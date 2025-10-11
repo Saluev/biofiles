@@ -16,6 +16,7 @@ class Transcript(Feature):
 
 
 class Exon(Feature):
+    number: int
     transcript: Transcript
     cdss: list["CDS"]
 
