@@ -27,9 +27,9 @@ class DialectDetector:
             if fd.source.lower() in ("bestrefseq", "gnomon"):
                 refseq_rows += 1
 
-        if gencode_rows / total_rows > 0.9:
+        if gencode_rows > 0 and gencode_rows >= 0.9 * total_rows:
             return GENCODE_DIALECT
-        if refseq_rows / total_rows > 0.9:
+        if refseq_rows > 0 and refseq_rows >= 0.9 * total_rows:
             return REFSEQ_DIALECT
 
         raise CantDetectDialect(
