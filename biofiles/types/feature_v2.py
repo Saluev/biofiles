@@ -226,6 +226,9 @@ class FeatureMetaclass(type):
             case None:
                 argument = f"{field_name}: {cls._format_type_arg(field_annotation, optional=False)}"
                 assignment = f"self.{field_name} = {field_name}"
+            case property():
+                argument = None
+                assignment = ""
             case other:
                 raise TypeError(f"unsupported field: {field_value}")
         return argument, assignment

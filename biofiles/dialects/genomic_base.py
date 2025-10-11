@@ -19,3 +19,7 @@ class Exon(Feature):
 
 class CDS(Feature):
     exon: Exon
+
+
+class UTR(Feature):
+    transcript: Transcript

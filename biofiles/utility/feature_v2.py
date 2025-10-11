@@ -84,6 +84,14 @@ class FeatureDrafts:
         self.by_class_and_id[key] = draft
 
 
+class RawFeatureReader(Reader):
+    def __init__(self, input_: TextIO | Path) -> None:
+        super().__init__(input_)
+
+    def __iter__(self) -> Iterator[FeatureDraft]:
+        raise NotImplementedError
+
+
 class FeatureReader(Reader):
 
     def __init__(
@@ -91,9 +99,16 @@ class FeatureReader(Reader):
     ) -> None:
         super().__init__(input_)
         self._feature_types = FeatureTypes(feature_types)
+        self._raw_reader = self._make_raw_feature_reader()
+
+    def _make_raw_feature_reader(self) -> RawFeatureReader:
+        raise NotImplementedError
 
     def __iter__(self) -> Iterator[Feature]:
-        raise NotImplementedError
+        fds = FeatureDrafts(self._feature_types)
+        for draft in self._raw_reader:
+            fds.add(draft)
+        yield from self._finalize_drafts(fds)
 
     def _finalize_drafts(self, fds: FeatureDrafts) -> Iterator[Feature]:
         self._choose_classes(fds)
