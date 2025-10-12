@@ -8,13 +8,12 @@ from biofiles.types.feature import (
     Feature,
     FeatureMetaclass,
     Relation,
-    Source,
     get_composite_field,
     Dialect,
 )
 
 
-@dataclass
+@dataclass(slots=True)
 class FeatureDraft:
     idx: int
     sequence_id: str
@@ -60,7 +59,7 @@ def _sort_by_filter_specificity(fts: list[FeatureMetaclass]) -> list[FeatureMeta
     return sorted(fts, key=key, reverse=True)
 
 
-@dataclass
+@dataclass(slots=True)
 class FeatureDrafts:
     feature_types: FeatureTypes
     drafts: list[FeatureDraft] = field(default_factory=deque)

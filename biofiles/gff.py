@@ -57,7 +57,6 @@ class RawGFFReader(RawFeatureReader):
             except Exception as exc:
                 raise ValueError(f"failed to parse line {i}: {exc}") from exc
 
-            parent_id = attributes.get("Parent", None)
             yield FeatureDraft(
                 idx=idx,
                 sequence_id=sequence_id,
@@ -106,7 +105,7 @@ class RawGFFReader(RawFeatureReader):
     ) -> dict[str, str | list[str]]:
         return {
             k: v.split(",") if "," in v else v
-            for part in attributes_str.strip(";").split(";")
+            for part in attributes_str.strip().strip(";").split(";")
             for k, v in (part.split("=", 1),)
         }
 
