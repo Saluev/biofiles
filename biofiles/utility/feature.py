@@ -170,6 +170,14 @@ class FeatureReader(Reader):
                 if relation.inverse.attribute_name is None:
                     pass
                 elif relation.inverse.one_to_one:
+                    if (
+                        getattr(fd.finalized, relation.inverse.attribute_name, None)
+                        is not None
+                    ):
+                        raise ValueError(
+                            f"too many related {related_class.__name__}s for {fd.finalized} (at least 2), "
+                            f"expected one-to-one relation"
+                        )
                     setattr(
                         related_fd.finalized,
                         relation.inverse.attribute_name,
