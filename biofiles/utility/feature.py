@@ -177,7 +177,7 @@ class FeatureReader(Reader):
                         is not None
                     ):
                         raise ValueError(
-                            f"too many related {related_class.__name__}s for {fd.finalized} (at least 2), "
+                            f"too many related {relation.class_.__name__}s for {related_fd.finalized} (at least 2), "
                             f"expected one-to-one relation"
                         )
                     setattr(
