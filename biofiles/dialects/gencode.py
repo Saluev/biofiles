@@ -126,12 +126,10 @@ exon_gene, _ = relation(source="gene_id")
 cds_exon, exon_cds = relation(source=("transcript_id", "exon_number"), one_to_one=True)
 utr_transcript, transcript_utrs = relation(source="transcript_id")
 utr_gene, _ = relation(source="gene_id")
-five_prime_utr_transcript, transcript_five_prime_utr = relation(
-    source="transcript_id", one_to_one=True
-)
+five_prime_utr_transcript, transcript_five_prime_utrs = relation(source="transcript_id")
 five_prime_utr_gene, _ = relation(source="gene_id")
-three_prime_utr_transcript, transcript_three_prime_utr = relation(
-    source="transcript_id", one_to_one=True
+three_prime_utr_transcript, transcript_three_prime_utrs = relation(
+    source="transcript_id"
 )
 three_prime_utr_gene, _ = relation(source="gene_id")
 start_codon_transcript, transcript_start_codon = relation(
@@ -159,6 +157,8 @@ class Transcript(BaseTranscript, type="transcript"):
     gene: Gene = transcript_gene
     exons: list["Exon"] = transcript_exons
     utrs: list["UTR"] = transcript_utrs
+    five_prime_utrs: "list[FivePrimeUTR]" = transcript_five_prime_utrs
+    three_prime_utrs: "list[ThreePrimeUTR]" = transcript_three_prime_utrs
     start_codon: "StartCodon | None" = transcript_start_codon
     stop_codon: "StopCodon | None" = transcript_stop_codon
     tags: list[str] = field(source="tag", default_factory=list)

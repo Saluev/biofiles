@@ -171,7 +171,9 @@ class FeatureReader(Reader):
                     pass
                 elif relation.inverse.one_to_one:
                     if (
-                        getattr(fd.finalized, relation.inverse.attribute_name, None)
+                        getattr(
+                            related_fd.finalized, relation.inverse.attribute_name, None
+                        )
                         is not None
                     ):
                         raise ValueError(
