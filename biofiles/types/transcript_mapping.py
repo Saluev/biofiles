@@ -38,7 +38,7 @@ class TranscriptClassCode(StrEnum):
     CONTAINED_WITHIN_INTRON = "i"
     """ Fully contained within reference intron. """
 
-    CONTAINS_WITHIN_INTRON = "i"
+    CONTAINS_WITHIN_INTRON = "y"
     """ Contains a reference within its intron(s). """
 
     POLYMERASE_RUN_ON = "p"
